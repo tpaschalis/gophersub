@@ -32,6 +32,7 @@ Feel free to open an issue, or create a pull request for anything you might want
 - [ ] Hardcode subs to videos 
 - [ ] Search for and download subtitles for your video automatically
 - [ ] Help create subtitles for hearing impaired people (maybe by facilitating the addition of "tags" such as [LOUD MUSIC])
+- [ ] Estimate subtitle "speed" (maybe characters-per-second?) and check for too-long or too-short ones.
 - [ ]   
 - [ ]    
 - [ ] What are *your* ideas?
