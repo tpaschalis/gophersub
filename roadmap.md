@@ -10,9 +10,9 @@ Development started on 2019-05-03 and was spurred as an idea a few days earlier,
 
 ## First wishlist
 During my first brainstorming sessions, here's what I imagine a program or library that deals with subtitles be able to achieve.    
-I really need to talk with other people who actually *write them* and check out *their* preferences, requirements and reality.
+I really need to talk with other people who actually *write subs* and check out *their* preferences, requirements and reality.
 
-Feel free to open an issue, or create a pull request for any other neat ideas.
+Feel free to open an issue, or create a pull request for anything you might want to add to the list.
 
 - [ ] Encode subtitles in different formats, change/preview their encoding
 - [ ] Add/Remove/Modify subtitles
@@ -20,6 +20,7 @@ Feel free to open an issue, or create a pull request for any other neat ideas.
 - [ ] Change subtitle duration in either *relative* or *absolute* time
 - [ ] Search-and-replace subtitle text strings
 - [ ] Find overlapping subtitles
+- [ ] Auto report problems in subtitles (malformed files, non-sequential entries, and whatnot)
 - [ ] Run SQL queries in one or more subtitles that exist in a directory
 - [ ] Facilitate translating using side-to-side panes
 - [ ] Simply view subtitle files (should be better than a text editor)
@@ -30,6 +31,6 @@ Feel free to open an issue, or create a pull request for any other neat ideas.
 - [ ] Hardcode subs to videos 
 - [ ] Search for and download subtitles for your video automatically
 - [ ] Help create subtitles for hearing impaired people (maybe by facilitating the addition of "tags" such as [LOUD MUSIC])
-- [ ]
-- [ ]
+- [ ]   
+- [ ]    
 - [ ] What are *your* ideas?
