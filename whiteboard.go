@@ -33,5 +33,17 @@ func durationToTimestamp_w(d time.Duration) {
 	// Way 3 : Regular expressions
 	// Now you have one more problem and whatnot
 
+	// Way 4 : The incorrect one
+	//var hour, minute int
+	//var second float64
+	//fmt.Println(d)
+	//fmt.Sscanf(d.String(), "%dh%dm%fs", &hour, &minute, &second)
+	//res := fmt.Sprintf("%02d:%02d:%02.3f", hour, minute, second)
+
+	// Initially I tried to make this work.
+	// While it DOES work for very specific formatted strings, it absolutely fails if you provide a duration
+	// Which does not contain hours, or minutes, as the Sscanf puts values wherever it wants to.
+	// Which also led me to see why testing is important
+
 	fmt.Println("Done")
 }
