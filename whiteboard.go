@@ -47,3 +47,32 @@ func durationToTimestamp_w(d time.Duration) {
 
 	fmt.Println("Done")
 }
+
+func StrToDuration_w(in string) (time.Duration, error) {
+	// I probably didn' need to test this function, but at least I found out more about error handling, and about writing tests for specific errors.
+
+	var res time.Duration
+	return res, nil
+}
+
+// I am not sure how to handle whole subtitle files.
+// I am pretty confident with each subtitle being a struct like
+//		Subtitle struct {
+//			Index    int
+//		    Start    time.Duration
+//			End      time.Duration
+//			Metadata string
+//		}
+//
+// I am still on the fence about the whole file though. It can be :
+//
+// var subfile []Subtitle
+// var subfile map[int]subtitle
+// type subfile struct {
+//		subs []Subtitle
+//		metadata string
+//}
+//
+//
+// I think I might go with the KISS principle and just use a slice.
+// It's ordered, can be easily iterated, avoid nested structs, easy for others to use as API in the future.

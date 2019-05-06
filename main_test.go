@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"testing"
 	"time"
 )
@@ -33,9 +34,31 @@ func TestDurationToTimestamp(t *testing.T) {
 
 }
 
-func TestSecArgToDuration(t *testing.T) {
+func TestStrToDuration(t *testing.T) {
 	type testpair struct {
-		input    string
-		expected time.Duration
+		input       string
+		expectedDur time.Duration
+		expectedErr error
+	}
+	var emptyTimeDuration time.Duration
+	var tests = []testpair{
+		{"1.4s", time.Duration(1*time.Second + 400*time.Millisecond), nil},
+		{"5s", time.Duration(5 * time.Second), nil},
+		{"0s", emptyTimeDuration, nil},
+		{"0.00000s", emptyTimeDuration, nil},
+		{"s", emptyTimeDuration, errors.New("time: invalid duration s")},
+		{"-1.2121", emptyTimeDuration, errors.New("time: missing unit in duration -1.2121")},
+		{"1m15.29s", time.Duration(time.Minute*1 + time.Second*15 + time.Millisecond*290), nil},
+		{"-1h5.401s", time.Duration(time.Hour*-1 + time.Second*-5 + time.Millisecond*-401), nil},
+	}
+
+	for _, pair := range tests {
+		actual, err := StrToDuration(pair.input)
+		if actual != pair.expectedDur {
+			t.Errorf("Testing StrToDuration with %v. Expected time.Duration as %v but got %v", pair.input, pair.expectedDur, actual)
+		}
+		if pair.expectedErr != nil && pair.expectedErr.Error() != err.Error() {
+			t.Errorf("Testing StrToDuration with %v. Expected errors as %v but got %v instead!", pair.input, pair.expectedErr, err)
+		}
 	}
 }
