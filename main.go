@@ -12,11 +12,13 @@ const (
 )
 
 type Subtitle struct {
-	Index    int
-	Start    time.Duration
-	End      time.Duration
-	Metadata string
+	Index   int
+	Start   time.Duration
+	End     time.Duration
+	Content string
 }
+
+type SubtitleFile []Subtitle
 
 func main() {
 
@@ -47,4 +49,14 @@ func StrToDuration(in string) (time.Duration, error) {
 		return res, err
 	}
 	return res, nil
+}
+
+func TimeshiftSRTFile(in SubtitleFile, shift time.Duration) SubtitleFile {
+	var res SubtitleFile
+	for _, sub := range in {
+		sub.Start = sub.Start + shift
+		sub.End = sub.End + shift
+		res = append(res, sub)
+	}
+	return res
 }

@@ -4,6 +4,8 @@ import (
 	"errors"
 	"testing"
 	"time"
+
+	"github.com/google/go-cmp/cmp"
 )
 
 func TestDurationToTimestamp(t *testing.T) {
@@ -28,7 +30,7 @@ func TestDurationToTimestamp(t *testing.T) {
 		actual := DurationToTimestamp(pair.input)
 		//fmt.Println(pair.input, pair.expected, actual)
 		if actual != pair.expected {
-			t.Errorf("Expected the duration-to-timestamp conversion to produce %v from %v but instead got %v!", pair.expected, pair.input, actual)
+			t.Errorf("Expected the duration-to-timestamp conversion to produce \n\n%v from \n\n%v but instead got \n\n%v!", pair.expected, pair.input, actual)
 		}
 	}
 
@@ -59,6 +61,77 @@ func TestStrToDuration(t *testing.T) {
 		}
 		if pair.expectedErr != nil && pair.expectedErr.Error() != err.Error() {
 			t.Errorf("Testing StrToDuration with %v. Expected errors as %v but got %v instead!", pair.input, pair.expectedErr, err)
+		}
+	}
+}
+
+func TestTimeshiftSRTFile(t *testing.T) {
+	originalText := `1
+00:00:01,602 --> 00:00:03,314
+Έχουμε όλοι υποφέρει.
+
+2
+00:00:04,536 --> 00:00:07,379
+Έχουμε χάσει αγαπημένους μας.
+
+3
+00:00:10,088 --> 00:00:14,500
+Αυτό δεν αφορά τους Οίκους των ευγενών,
+αλλά τους ζωντανούς και τους νεκρούς.
+
+4
+00:00:14,611 --> 00:00:16,568
+Κι εγώ σκοπεύω να ζήσω.
+
+5
+00:00:17,929 --> 00:00:19,751
+Σας προσφέρω την επιλογή...
+`
+	parsedSRTFile := []Subtitle{
+		{1, time.Duration(time.Second*1 + time.Millisecond*602), time.Duration(time.Second*3 + time.Millisecond*314), `Έχουμε όλοι υποφέρει.`},
+		{2, time.Duration(time.Second*4 + time.Millisecond*536), time.Duration(time.Second*7 + time.Millisecond*379), `Έχουμε χάσει αγαπημένους μας.`},
+		{3, time.Duration(time.Second*10 + time.Millisecond*88), time.Duration(time.Second*14 + time.Millisecond*500), `Αυτό δεν αφορά τους Οίκους των ευγενών,
+αλλά τους ζωντανούς και τους νεκρούς.`},
+		{4, time.Duration(time.Second*14 + time.Millisecond*611), time.Duration(time.Second*16 + time.Millisecond*568), `Κι εγώ σκοπεύω να ζήσω.`},
+		{5, time.Duration(time.Second*17 + time.Millisecond*929), time.Duration(time.Second*19 + time.Millisecond*751), `Σας προσφέρω την επιλογή..`},
+	}
+	_, _ = originalText, parsedSRTFile
+
+	type testpair struct {
+		input    SubtitleFile
+		expected SubtitleFile
+		shift    time.Duration
+	}
+	var tests = []testpair{
+		{
+			[]Subtitle{
+				{1, time.Duration(time.Second*1 + time.Millisecond*602), time.Duration(time.Second*3 + time.Millisecond*314), `Έχουμε όλοι υποφέρει.`},
+				{2, time.Duration(time.Second*4 + time.Millisecond*536), time.Duration(time.Second*7 + time.Millisecond*379), `Έχουμε χάσει αγαπημένους μας.`},
+				{3, time.Duration(time.Second*10 + time.Millisecond*88), time.Duration(time.Second*14 + time.Millisecond*500), `Αυτό δεν αφορά τους Οίκους των ευγενών,
+αλλά τους ζωντανούς και τους νεκρούς.`},
+				{4, time.Duration(time.Second*14 + time.Millisecond*611), time.Duration(time.Second*16 + time.Millisecond*568), `Κι εγώ σκοπεύω να ζήσω.`},
+				{5, time.Duration(time.Second*17 + time.Millisecond*929), time.Duration(time.Second*19 + time.Millisecond*751), `Σας προσφέρω την επιλογή..`},
+			},
+			[]Subtitle{
+				{1, time.Duration(time.Second*3 + time.Millisecond*602), time.Duration(time.Second*5 + time.Millisecond*314), `Έχουμε όλοι υποφέρει.`},
+				{2, time.Duration(time.Second*6 + time.Millisecond*536), time.Duration(time.Second*9 + time.Millisecond*379), `Έχουμε χάσει αγαπημένους μας.`},
+				{3, time.Duration(time.Second*12 + time.Millisecond*88), time.Duration(time.Second*16 + time.Millisecond*500), `Αυτό δεν αφορά τους Οίκους των ευγενών,
+αλλά τους ζωντανούς και τους νεκρούς.`},
+				{4, time.Duration(time.Second*16 + time.Millisecond*611), time.Duration(time.Second*18 + time.Millisecond*568), `Κι εγώ σκοπεύω να ζήσω.`},
+				{5, time.Duration(time.Second*19 + time.Millisecond*929), time.Duration(time.Second*21 + time.Millisecond*751), `Σας προσφέρω την επιλογή..`},
+			},
+			time.Duration(time.Second * 2),
+		},
+	}
+	for _, pair := range tests {
+		actual := TimeshiftSRTFile(pair.input, pair.shift)
+		if len(actual) != len(pair.expected) {
+			t.Errorf("The length of the returned SubtitleFile (%v) is not the same as the lenght of the input SubtitleFile (%v) as expected", len(actual), len(pair.input))
+		}
+		for i, _ := range pair.input {
+			if !cmp.Equal(actual[i], pair.expected[i]) {
+				t.Errorf("There was an error while timeshifting a test-case subtitle. With input (%v), expected (%v) but got (%v)", pair.input[i], pair.expected[i], actual[i])
+			}
 		}
 	}
 }
