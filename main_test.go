@@ -135,3 +135,60 @@ func TestTimeshiftSRTFile(t *testing.T) {
 		}
 	}
 }
+
+func TestPaceSRTFile(t *testing.T) {
+	type testpair struct {
+		input       SubtitleFile
+		expected    SubtitleFile
+		rate        float64
+		expectedErr error
+	}
+
+	var emptySubtitleFile SubtitleFile
+	var tests = []testpair{
+		{
+			[]Subtitle{
+				{1, time.Duration(time.Second*1 + time.Millisecond*602), time.Duration(time.Second*3 + time.Millisecond*314), `Έχουμε όλοι υποφέρει.`},
+				{2, time.Duration(time.Second*4 + time.Millisecond*536), time.Duration(time.Second*7 + time.Millisecond*379), `Έχουμε χάσει αγαπημένους μας.`},
+				{3, time.Duration(time.Second*10 + time.Millisecond*88), time.Duration(time.Second*14 + time.Millisecond*500), `Αυτό δεν αφορά τους Οίκους των ευγενών,
+αλλά τους ζωντανούς και τους νεκρούς.`},
+				{4, time.Duration(time.Second*14 + time.Millisecond*611), time.Duration(time.Second*16 + time.Millisecond*568), `Κι εγώ σκοπεύω να ζήσω.`},
+				{5, time.Duration(time.Second*17 + time.Millisecond*929), time.Duration(time.Second*19 + time.Millisecond*751), `Σας προσφέρω την επιλογή..`},
+			},
+			[]Subtitle{
+				{1, time.Duration(time.Millisecond * 801), time.Duration(time.Second*1 + time.Millisecond*657), `Έχουμε όλοι υποφέρει.`},
+				{2, time.Duration(time.Second*2 + time.Millisecond*268), time.Duration(time.Second*3 + time.Millisecond*689 + time.Microsecond*500), `Έχουμε χάσει αγαπημένους μας.`},
+				{3, time.Duration(time.Second*5 + time.Millisecond*44), time.Duration(time.Second*7 + time.Millisecond*250), `Αυτό δεν αφορά τους Οίκους των ευγενών,
+αλλά τους ζωντανούς και τους νεκρούς.`},
+				{4, time.Duration(time.Second*7 + time.Millisecond*305 + time.Microsecond*500), time.Duration(time.Second*8 + time.Millisecond*284), `Κι εγώ σκοπεύω να ζήσω.`},
+				{5, time.Duration(time.Second*8 + time.Millisecond*964 + time.Microsecond*500), time.Duration(time.Second*9 + time.Millisecond*875 + time.Microsecond*500), `Σας προσφέρω την επιλογή..`},
+			},
+			2.,
+			nil,
+		},
+		{
+			[]Subtitle{
+				{1, time.Duration(time.Second*1 + time.Millisecond*602), time.Duration(time.Second*3 + time.Millisecond*314), `Έχουμε όλοι υποφέρει.`},
+				{2, time.Duration(time.Second*4 + time.Millisecond*536), time.Duration(time.Second*7 + time.Millisecond*379), `Έχουμε χάσει αγαπημένους μας.`},
+				{3, time.Duration(time.Second*10 + time.Millisecond*88), time.Duration(time.Second*14 + time.Millisecond*500), `Αυτό δεν αφορά τους Οίκους των ευγενών,
+αλλά τους ζωντανούς και τους νεκρούς.`},
+				{4, time.Duration(time.Second*14 + time.Millisecond*611), time.Duration(time.Second*16 + time.Millisecond*568), `Κι εγώ σκοπεύω να ζήσω.`},
+				{5, time.Duration(time.Second*17 + time.Millisecond*929), time.Duration(time.Second*19 + time.Millisecond*751), `Σας προσφέρω την επιλογή..`},
+			},
+			emptySubtitleFile,
+			-1.2,
+			errors.New("Input rate should be a positive, floating-point number"),
+		},
+	}
+
+	for _, pair := range tests {
+		actual, err := PaceSRTFile(pair.input, pair.rate)
+		if !cmp.Equal(actual, pair.expected) {
+			t.Errorf("Testing PaceSRTFile with %v. Expected SubtitleFile as %v but got %v instead", pair.input, pair.expected, actual)
+		}
+		if pair.expectedErr != nil && pair.expectedErr.Error() != err.Error() {
+			t.Errorf("Testing PaceSRTFile with %v. Expected errors as %v but got %v instead!", pair.input, pair.expectedErr, err)
+		}
+	}
+
+}
