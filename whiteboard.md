@@ -11,6 +11,11 @@ This is done best with pen-and-paper, but since I'm using Git, I'll try to go fo
 
 ## Design
 
+Since I've now started with writing functionality, I'm not yet sure what will be the best way to package the whole thing, as a library, to enable it to be used as a cli application and whatnot. 
+
+Because I'm lazy, I'll be throwing everything into `main.go`, and the structure will emerge later on.
+
+
 I am not sure how to handle whole subtitle files.    
 I am pretty confident with each subtitle being a struct like this will do, (maybe add another `metadata` field).
 ```go
