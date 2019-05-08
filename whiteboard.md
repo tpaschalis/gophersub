@@ -42,10 +42,35 @@ type subfile struct {
 I think I might go with the KISS principle and just use a slice.
 It's ordered, can be easily iterated, avoid nested structs, easy for others to use as API in the future.
 
+## Parsing SRT File
+I've been postponing this, but I really need to sit down and find a nice solution.
+
+## SQL Queries
+One of the reasons I'm excited about this project, and keep pushing it forwards, is this feature, the ability to run SQL queries on multiple subtitle files.
+
+I'll probably be using SQLite, to create a singular `.db` file that I'll be querying. What's a good schema supposed to be like for this job?
+
+```
+filename  | subtitle_index | subtitle_start | subtitle_end | subtitle_content
+```
+
+
+
 ## Testing
 
 
 ## Functions
+
+### func ParseSRTFile()
+I'm thinking about how to best parse SRT files. I see some options (not too many, for now). 
+
+- I could use multiline regex matching, 
+- Use a regex to match a subset and then expand forwards-backwards (like search for `-->` and/or `\n\n%d` to locate the subtitles
+- Work directly on a line-by-line and detect two empty lines in succession.
+
+I need to run some test with a video player and toy around with what's allowed and what not, eg. what errors will VLC ignore and what errors it will fail at displaying.
+
+For now the last solution seems to be the simplest one, but I don't know how it will deal with errors. In case we go forward with regular expressions, we might need multiple alternative regexes to 'catch' error cases
 
 ### func durationToTimestamp()
 
@@ -57,14 +82,13 @@ There are a bunch of possible ways to conver a `time.Duration` to an SRT timesta
 Way 1 - Act directly on the duration object.   
 Why it's bad : 
 ```go
-	// Way 1 : Directly act on the duration object
-	//days := int64(d.Hours() / 24)
-	//hours := int64(math.Mod(d.Hours(), 24))
-	//minutes := int64(math.Mod(d.Minutes(), 60))
-	//seconds := int64(math.Mod(d.Seconds(), 60))
-	//millis := int64(math.Mod(float64(d.Nanoseconds()), 1000)) * 1000
-	//millis := float64(d) / float64(time.Millisecond)
-	//fmt.Println(days, hours, minutes, seconds, millis)
+days := int64(d.Hours() / 24)
+hours := int64(math.Mod(d.Hours(), 24))
+minutes := int64(math.Mod(d.Minutes(), 60))
+seconds := int64(math.Mod(d.Seconds(), 60))
+millis := int64(math.Mod(float64(d.Nanoseconds()), 1000)) * 1000
+millis := float64(d) / float64(time.Millisecond)
+fmt.Println(days, hours, minutes, seconds, millis)
 ```
 
 Way 2 : Use Sscanf to 'scan' the formatted string from the object's `.String()` method    
