@@ -65,7 +65,7 @@ func TestStrToDuration(t *testing.T) {
 	}
 }
 
-func TestTimeshiftSRTFile(t *testing.T) {
+func TestTimeshiftSubtitleFile(t *testing.T) {
 	originalText := `1
 00:00:01,602 --> 00:00:03,314
 Έχουμε όλοι υποφέρει.
@@ -124,7 +124,7 @@ func TestTimeshiftSRTFile(t *testing.T) {
 		},
 	}
 	for _, pair := range tests {
-		actual := TimeshiftSRTFile(pair.input, pair.shift)
+		actual := TimeshiftSubtitleFile(pair.input, pair.shift)
 		if len(actual) != len(pair.expected) {
 			t.Errorf("The length of the returned SubtitleFile (%v) is not the same as the lenght of the input SubtitleFile (%v) as expected", len(actual), len(pair.input))
 		}
@@ -136,7 +136,7 @@ func TestTimeshiftSRTFile(t *testing.T) {
 	}
 }
 
-func TestPaceSRTFile(t *testing.T) {
+func TestPaceSubtitleFile(t *testing.T) {
 	type testpair struct {
 		input       SubtitleFile
 		expected    SubtitleFile
@@ -182,12 +182,12 @@ func TestPaceSRTFile(t *testing.T) {
 	}
 
 	for _, pair := range tests {
-		actual, err := PaceSRTFile(pair.input, pair.rate)
+		actual, err := PaceSubtitleFile(pair.input, pair.rate)
 		if !cmp.Equal(actual, pair.expected) {
-			t.Errorf("Testing PaceSRTFile with %v. Expected SubtitleFile as %v but got %v instead", pair.input, pair.expected, actual)
+			t.Errorf("Testing PaceSubtitleFile with %v. Expected SubtitleFile as %v but got %v instead", pair.input, pair.expected, actual)
 		}
 		if pair.expectedErr != nil && pair.expectedErr.Error() != err.Error() {
-			t.Errorf("Testing PaceSRTFile with %v. Expected errors as %v but got %v instead!", pair.input, pair.expectedErr, err)
+			t.Errorf("Testing PaceSubtitleFile with %v. Expected errors as %v but got %v instead!", pair.input, pair.expectedErr, err)
 		}
 	}
 
