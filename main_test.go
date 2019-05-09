@@ -297,7 +297,13 @@ func TestParseSRTFile(t *testing.T) {
 		{5, emptyTimeDuration, time.Duration(time.Second*19 + time.Millisecond*751), `Σας προσφέρω την επιλογή...`},
 	}
 
-	//[Unexpected parsed seconds value, should be between 0 and 60 Wrong Number of fields resulting from input timestamp Unexpected parsed millisecond value, should be between 0 and 999 Unexpected parsed seconds value, should be between 0 and 60 Unexpected parsed minute value, should be between 0 and 60 Unexpected parsed minute value, should be between 0 and 60 Wrong Number of fields resulting from input timestamp]
+	sampleWrongIndices := SubtitleFile{
+		{0, time.Duration(time.Second*1 + time.Millisecond*602), time.Duration(time.Second*3 + time.Millisecond*314), `Έχουμε όλοι υποφέρει.`},
+		{0, time.Duration(time.Second*4 + time.Millisecond*536), time.Duration(time.Second*7 + time.Millisecond*379), `Έχουμε χάσει αγαπημένους μας.`},
+		{0, emptyTimeDuration, emptyTimeDuration, `αλλά τους ζωντανούς και τους νεκρούς.`},
+		{0, time.Duration(time.Second*14 + time.Millisecond*611), time.Duration(time.Second*16 + time.Millisecond*568), `Κι εγώ σκοπεύω να ζήσω.`},
+		{5, time.Duration(time.Second*17 + time.Millisecond*929), time.Duration(time.Second*19 + time.Millisecond*751), `Σας προσφέρω την επιλογή...`},
+	}
 
 	var tests = []testpair{
 		{
@@ -336,6 +342,18 @@ func TestParseSRTFile(t *testing.T) {
 				errors.New("Unexpected parsed minute value, should be between 0 and 60"),
 				errors.New("Unexpected parsed minute value, should be between 0 and 60"),
 				errors.New("Wrong Number of fields resulting from input timestamp"),
+			},
+		},
+		{
+			"samples/sample_wrong_indices.srt",
+			sampleWrongIndices,
+			[]error{
+				errors.New(`strconv.Atoi: parsing "a": invalid syntax`),
+				errors.New(`strconv.Atoi: parsing "2d": invalid syntax`),
+				errors.New(`strconv.Atoi: parsing "00:00:10,088 --> 00:00:14,500": invalid syntax`),
+				errors.New(`Wrong Number of fields resulting from input timestamp`),
+				errors.New(`Wrong Number of fields resulting from input timestamp`),
+				errors.New(`strconv.Atoi: parsing "4   ": invalid syntax`),
 			},
 		},
 	}

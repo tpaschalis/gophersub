@@ -51,13 +51,13 @@ func main() {
 	//_ = a
 	//fmt.Println(cmp.Equal(a, parsedSRTFile))
 
-	//b, c := ParseSRTFile("samples/sample_wrong_timestamps.srt")
-	//fmt.Println("-----------")
-	//fmt.Println(b)
-	//fmt.Println("-----------")
-	//fmt.Println(c)
-	//fmt.Println("-----------")
-	//_, _ = b, c
+	b, c := ParseSRTFile("samples/sample_wrong_indices.srt")
+	fmt.Println("-----------")
+	fmt.Println(b)
+	fmt.Println("-----------")
+	fmt.Println(c)
+	fmt.Println("-----------")
+	_, _ = b, c
 }
 
 func DurationToTimestampSRT(d time.Duration) string {
