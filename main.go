@@ -12,8 +12,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/google/go-cmp/cmp"
 )
 
 const (
@@ -42,18 +40,24 @@ func main() {
 	_ = parsedSRTFile
 	//PaceSubtitleFile(parsedSRTFile, 2.)
 
-	ParseSRTFile("samples/sample.srt")
-	TimestampToDurationSRT("00:00:17,929 -->")
-	TimestampToDurationSRT("--> 00:00:19,751")
-	a, _ := ParseSRTFile("samples/sample.srt")
+	//ParseSRTFile("samples/sample.srt")
+	//TimestampToDurationSRT("00:00:17,929 -->")
+	//TimestampToDurationSRT("--> 00:00:19,751")
 
-	fmt.Println("parsedSRTFile :\n\n", parsedSRTFile, "\n\n")
-	fmt.Println("funcResult :\n\n", a, "\n\n")
-	_ = a
-	fmt.Println(cmp.Equal(a, parsedSRTFile))
+	//a, _ := ParseSRTFile("samples/sample.srt")
 
-	b, c := ParseSRTFile("samples/1.srt")
-	_, _ = b, c
+	//fmt.Println("parsedSRTFile :\n\n", parsedSRTFile)
+	//fmt.Println("funcResult :\n\n", a)
+	//_ = a
+	//fmt.Println(cmp.Equal(a, parsedSRTFile))
+
+	//b, c := ParseSRTFile("samples/sample_wrong_timestamps.srt")
+	//fmt.Println("-----------")
+	//fmt.Println(b)
+	//fmt.Println("-----------")
+	//fmt.Println(c)
+	//fmt.Println("-----------")
+	//_, _ = b, c
 }
 
 func DurationToTimestampSRT(d time.Duration) string {
@@ -94,7 +98,7 @@ func TimestampToDurationSRT(in string) (time.Duration, error) {
 		return res, errors.New("Unexpected parsed seconds value, should be between 0 and 60")
 	}
 	if millisecond > 999 {
-		return res, errors.New("Unexpected parsed millisecond value, should be between 0 and 9999")
+		return res, errors.New("Unexpected parsed millisecond value, should be between 0 and 999")
 	}
 	//fmt.Println("----------------------------------------")
 	//fmt.Println(len(splitInput))
@@ -243,4 +247,16 @@ func TimestampSplitSRT(r rune) bool {
 
 func EOLSplit(r rune) bool {
 	return r == '\n' || r == '\r'
+}
+
+func ErrorSlicesEqual(a, b []error) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i, _ := range a {
+		if a[i].Error() != b[i].Error() {
+			return false
+		}
+	}
+	return true
 }
