@@ -8,7 +8,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-func TestDurationToTimestamp(t *testing.T) {
+func TestDurationToTimestampSRT(t *testing.T) {
 	type testpair struct {
 		input    time.Duration
 		expected string
@@ -27,7 +27,7 @@ func TestDurationToTimestamp(t *testing.T) {
 	}
 
 	for _, pair := range tests {
-		actual := DurationToTimestamp(pair.input)
+		actual := DurationToTimestampSRT(pair.input)
 		//fmt.Println(pair.input, pair.expected, actual)
 		if actual != pair.expected {
 			t.Errorf("Expected the duration-to-timestamp conversion to produce \n\n%v from \n\n%v but instead got \n\n%v!", pair.expected, pair.input, actual)
@@ -191,4 +191,78 @@ func TestPaceSubtitleFile(t *testing.T) {
 		}
 	}
 
+}
+
+func TestTimestampSplitSRT(t *testing.T) {
+	type testpair struct {
+		input    rune
+		expected bool
+	}
+	var tests = []testpair{
+		{
+			',', true,
+		},
+		{
+			'.', true,
+		},
+		{
+			':', true,
+		},
+		{
+			'a', false,
+		},
+		{
+			'1', false,
+		},
+		{
+			'世', false,
+		},
+	}
+
+	for _, pair := range tests {
+		actual := TimestampSplitSRT(pair.input)
+		if actual != pair.expected {
+			t.Errorf("Testing TimestampSplitSRT with %v. Expected %v but got %v instead", pair.input, pair.expected, actual)
+		}
+	}
+}
+
+func TestEOLSplit(t *testing.T) {
+	type testpair struct {
+		input    rune
+		expected bool
+	}
+	var tests = []testpair{
+		{
+			'\n', true,
+		},
+		{
+			'\r', true,
+		},
+		{
+			'\t', false,
+		},
+		{
+			'\\', false,
+		},
+		{
+			'\f', false,
+		},
+		{
+			'a', false,
+		},
+		{
+			'1', false,
+		},
+		{
+			'世', false,
+		},
+	}
+
+	for _, pair := range tests {
+		actual := EOLSplit(pair.input)
+		if actual != pair.expected {
+			t.Errorf("Testing EOLSplit with %v. Expected %v but got %v instead", pair.input, pair.expected, actual)
+		}
+	}
 }
