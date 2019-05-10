@@ -371,3 +371,41 @@ func TestParseSRTFile(t *testing.T) {
 		}
 	}
 }
+
+func TestErrorSlicesEqual(t *testing.T) {
+	type testpair struct {
+		in1      []error
+		in2      []error
+		expected bool
+	}
+
+	var tests = []testpair{
+		{
+			[]error{},
+			[]error{},
+			true,
+		},
+		{
+			[]error{errors.New("Error1"), errors.New("Error2")},
+			[]error{errors.New("Error1"), errors.New("Error2"), errors.New("Error3")},
+			false,
+		},
+		{
+			[]error{errors.New("Error1"), errors.New("Error2")},
+			[]error{errors.New("Error1"), errors.New("Error2")},
+			true,
+		},
+		{
+			[]error{errors.New("Error0"), errors.New("Error ONE")},
+			[]error{errors.New("Error0"), errors.New("Error TWO")},
+			false,
+		},
+	}
+
+	for _, pair := range tests {
+		actual := ErrorSlicesEqual(pair.in1, pair.in2)
+		if actual != pair.expected {
+			t.Errorf("Testing ErrorSlicesEqual with %v, %v. Expected errors as %v but got %v instead!", pair.in1, pair.in2, pair.expected, actual)
+		}
+	}
+}

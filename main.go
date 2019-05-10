@@ -38,26 +38,6 @@ func main() {
 		{5, time.Duration(time.Second*17 + time.Millisecond*929), time.Duration(time.Second*19 + time.Millisecond*751), `Σας προσφέρω την επιλογή...`},
 	}
 	_ = parsedSRTFile
-	//PaceSubtitleFile(parsedSRTFile, 2.)
-
-	//ParseSRTFile("samples/sample.srt")
-	//TimestampToDurationSRT("00:00:17,929 -->")
-	//TimestampToDurationSRT("--> 00:00:19,751")
-
-	//a, _ := ParseSRTFile("samples/sample.srt")
-
-	//fmt.Println("parsedSRTFile :\n\n", parsedSRTFile)
-	//fmt.Println("funcResult :\n\n", a)
-	//_ = a
-	//fmt.Println(cmp.Equal(a, parsedSRTFile))
-
-	b, c := ParseSRTFile("samples/sample_wrong_indices.srt")
-	fmt.Println("-----------")
-	fmt.Println(b)
-	fmt.Println("-----------")
-	fmt.Println(c)
-	fmt.Println("-----------")
-	_, _ = b, c
 }
 
 func DurationToTimestampSRT(d time.Duration) string {
@@ -100,13 +80,6 @@ func TimestampToDurationSRT(in string) (time.Duration, error) {
 	if millisecond > 999 {
 		return res, errors.New("Unexpected parsed millisecond value, should be between 0 and 999")
 	}
-	//fmt.Println("----------------------------------------")
-	//fmt.Println(len(splitInput))
-	//fmt.Println(splitInput)
-	//fmt.Println(splitInput[0], hour)
-	//fmt.Println(splitInput[1], minute)
-	//fmt.Println(splitInput[2], second)
-	//fmt.Println(splitInput[3], millisecond)
 
 	res = time.Duration(time.Hour*time.Duration(hour) + time.Minute*time.Duration(minute) + time.Second*time.Duration(second) + time.Millisecond*time.Duration(millisecond))
 
@@ -146,9 +119,6 @@ func PaceSubtitleFile(in SubtitleFile, rate float64) (SubtitleFile, error) {
 		sub.End = sub.End*time.Duration(whole) + sub.End*time.Duration(int(frac*1000))/1000
 		res = append(res, sub)
 	}
-	//fmt.Println(in)
-	//fmt.Println("--------------------------------------=============-----------------------------------------------")
-	//fmt.Println(res)
 	return res, nil
 }
 
