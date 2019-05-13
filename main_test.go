@@ -574,7 +574,7 @@ func TestRemoveSubtitles(t *testing.T) {
 		expectedErr error
 	}
 
-	shortSRTFile1 := SubtitleFile{
+	shortSRTFile := SubtitleFile{
 		{1, time.Duration(time.Second*1 + time.Millisecond*602), time.Duration(time.Second*3 + time.Millisecond*314), `Έχουμε όλοι υποφέρει.`},
 		{2, time.Duration(time.Second*4 + time.Millisecond*536), time.Duration(time.Second*7 + time.Millisecond*379), `Έχουμε χάσει αγαπημένους μας.`},
 		{3, time.Duration(time.Second*10 + time.Millisecond*88), time.Duration(time.Second*14 + time.Millisecond*500), `Αυτό δεν αφορά τους Οίκους των ευγενών,
@@ -584,27 +584,27 @@ func TestRemoveSubtitles(t *testing.T) {
 	}
 	var tests = []testpair{
 		{
-			shortSRTFile1,
+			shortSRTFile,
 			-1,
-			shortSRTFile1,
+			shortSRTFile,
 			errors.New("The index marked for removal is invalid :-1"),
 		},
 		{
-			shortSRTFile1,
+			shortSRTFile,
 			-9,
-			shortSRTFile1,
+			shortSRTFile,
 			errors.New("The index marked for removal is invalid :-9"),
 		},
 		{
-			shortSRTFile1,
+			shortSRTFile,
 			0,
-			shortSRTFile1,
+			shortSRTFile,
 			errors.New("The index marked for removal is invalid :0"),
 		},
 		{
-			shortSRTFile1,
+			shortSRTFile,
 			99,
-			shortSRTFile1,
+			shortSRTFile,
 			errors.New("The index marked for removal is invalid :99"),
 		},
 		{
@@ -616,7 +616,7 @@ func TestRemoveSubtitles(t *testing.T) {
 			//				{4, time.Duration(time.Second*14 + time.Millisecond*611), time.Duration(time.Second*16 + time.Millisecond*568), `Κι εγώ σκοπεύω να ζήσω.`},
 			//				{5, time.Duration(time.Second*17 + time.Millisecond*929), time.Duration(time.Second*19 + time.Millisecond*751), `Σας προσφέρω την επιλογή..`},
 			//			},
-			shortSRTFile1,
+			shortSRTFile,
 			2,
 			[]Subtitle{
 				{1, time.Duration(time.Second*1 + time.Millisecond*602), time.Duration(time.Second*3 + time.Millisecond*314), `Έχουμε όλοι υποφέρει.`},
@@ -628,7 +628,7 @@ func TestRemoveSubtitles(t *testing.T) {
 			nil,
 		},
 		{
-			shortSRTFile1,
+			shortSRTFile,
 			4,
 			[]Subtitle{
 				{1, time.Duration(time.Second*1 + time.Millisecond*602), time.Duration(time.Second*3 + time.Millisecond*314), `Έχουμε όλοι υποφέρει.`},
@@ -640,7 +640,7 @@ func TestRemoveSubtitles(t *testing.T) {
 			nil,
 		},
 		{
-			shortSRTFile1,
+			shortSRTFile,
 			1,
 			[]Subtitle{
 				{1, time.Duration(time.Second*4 + time.Millisecond*536), time.Duration(time.Second*7 + time.Millisecond*379), `Έχουμε χάσει αγαπημένους μας.`},
@@ -652,7 +652,7 @@ func TestRemoveSubtitles(t *testing.T) {
 			nil,
 		},
 		{
-			shortSRTFile1,
+			shortSRTFile,
 			5,
 			[]Subtitle{
 				{1, time.Duration(time.Second*1 + time.Millisecond*602), time.Duration(time.Second*3 + time.Millisecond*314), `Έχουμε όλοι υποφέρει.`},
