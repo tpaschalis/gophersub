@@ -868,7 +868,7 @@ PEW`, "", ""},
 	for _, pair := range tests {
 		var actual SubtitleFile
 		var actualErr error
-		actual, actualErr = AddSubtitle(pair.in1, pair.in2, pair.in3, pair.in4)
+		actual, actualErr = AddSubtitle(pair.in1, pair.in2, pair.in3, pair.in4, "", "")
 
 		if actualErr != nil && pair.expectedErr.Error() != actualErr.Error() {
 			t.Errorf("Testing AddSubtitle using %v. Expected error %v but got %v instead!", pair.in2, pair.expectedErr, actualErr)

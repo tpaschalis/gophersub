@@ -34,28 +34,6 @@ type SubtitleFile struct {
 }
 
 func main() {
-	parsedSRTFile := SubtitleFile{
-		[]Subtitle{
-			{1, time.Duration(time.Second*1 + time.Millisecond*602), time.Duration(time.Second*3 + time.Millisecond*314), `Έχουμε όλοι υποφέρει.`, "", ""},
-			{2, time.Duration(time.Second*4 + time.Millisecond*536), time.Duration(time.Second*7 + time.Millisecond*379), `Έχουμε χάσει αγαπημένους μας.`, "", ""},
-			{3, time.Duration(time.Second*10 + time.Millisecond*88), time.Duration(time.Second*14 + time.Millisecond*500), `Αυτό δεν αφορά τους Οίκους των ευγενών,
-αλλά τους ζωντανούς και τους νεκρούς.`, "", ""},
-			{4, time.Duration(time.Second*14 + time.Millisecond*611), time.Duration(time.Second*16 + time.Millisecond*568), `Κι εγώ σκοπεύω να ζήσω.`, "", ""},
-			{5, time.Duration(time.Second*17 + time.Millisecond*929), time.Duration(time.Second*19 + time.Millisecond*751), `Σας προσφέρω την επιλογή...`, "", ""},
-		},
-		"",
-	}
-	_ = parsedSRTFile
-
-	subfile, _ := ParseSRTFile("samples/sample.srt")
-	_ = subfile
-
-	//fmt.Println(time.Duration(1*time.Second) < time.Duration(2*time.Second))
-	//a, b := AddSubtitle(subfile, `3.4s`, `3.9s`, `PEW`)
-	//fmt.Println(a, b)
-	a, b := AddSubtitle(subfile, `16.570s`, `17.801s`, "PEW PEW\n PEW")
-	fmt.Println(a, b)
-
 }
 
 func DurationToTimestampSRT(d time.Duration) string {
@@ -318,7 +296,7 @@ func RemoveSubtitle(subfile SubtitleFile, idx int) (SubtitleFile, error) {
 	return ret, nil
 }
 
-func AddSubtitle(subfile SubtitleFile, start, end, content string) (SubtitleFile, error) {
+func AddSubtitle(subfile SubtitleFile, start, end, content, metadata, header string) (SubtitleFile, error) {
 	var res SubtitleFile
 	startTime, _ := StrToDuration(start)
 	endTime, _ := StrToDuration(end)
@@ -328,17 +306,17 @@ func AddSubtitle(subfile SubtitleFile, start, end, content string) (SubtitleFile
 	placed := false
 
 	// added conditional if file is dead last or dead front
-	// this is EXTREMELY bad, and should be changed asap
+	// this is a bad practice, I think I can come up with something more elegant.
 	// TODO TODO TODO TODO
 	if startTime > subfile.Subtitles[len(subfile.Subtitles)-1].End {
 		res.Subtitles = append(res.Subtitles, subfile.Subtitles...)
-		res.Subtitles = append(res.Subtitles, Subtitle{len(subfile.Subtitles) + 1, startTime, endTime, content, "", ""})
+		res.Subtitles = append(res.Subtitles, Subtitle{len(subfile.Subtitles) + 1, startTime, endTime, content, metadata, header})
 		res = SerializeSubtitles(res)
 		return res, nil
 	}
 
 	if endTime < subfile.Subtitles[0].Start {
-		res.Subtitles = append(res.Subtitles, Subtitle{1, startTime, endTime, content, "", ""})
+		res.Subtitles = append(res.Subtitles, Subtitle{1, startTime, endTime, content, metadata, header})
 		res.Subtitles = append(res.Subtitles, subfile.Subtitles...)
 		res = SerializeSubtitles(res)
 		return res, nil
@@ -350,19 +328,21 @@ func AddSubtitle(subfile SubtitleFile, start, end, content string) (SubtitleFile
 
 		if startTime > subfile.Subtitles[i].End && endTime < subfile.Subtitles[i+1].Start {
 			placed = true
-			fmt.Println("Placing Sub")
 			// Bumped once for skipping current entry in loop, once for zero-based indexing
-			res.Subtitles = append(res.Subtitles, Subtitle{i + 2, startTime, endTime, content, "", ""})
+			res.Subtitles = append(res.Subtitles, Subtitle{i + 2, startTime, endTime, content, metadata, header})
 			continue
 		}
 
 		if placed == true {
 			// New index is n+2, one for the new entry, one for the zero-based indexing
-			res.Subtitles = append(res.Subtitles, Subtitle{i + 2, sub.Start, sub.End, sub.Content, "", ""})
+			res.Subtitles = append(res.Subtitles, Subtitle{i + 2, sub.Start, sub.End, sub.Content, metadata, header})
 		}
 	}
 	if placed == false {
 		return subfile, errors.New("New subtitle would overlap with existing ones, ignoring it..." + start + " - " + end)
 	}
 	return res, nil
+}
+
+func PrintSubfileInfo(subfile SubtitleFile) {
 }
