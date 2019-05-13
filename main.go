@@ -20,22 +20,30 @@ const (
 )
 
 type Subtitle struct {
-	Index   int
-	Start   time.Duration
-	End     time.Duration
-	Content string
+	Index    int
+	Start    time.Duration
+	End      time.Duration
+	Content  string
+	Metadata string
+	Header   string
 }
 
-type SubtitleFile []Subtitle
+type SubtitleFile struct {
+	Subtitles []Subtitle
+	Headers   string
+}
 
 func main() {
 	parsedSRTFile := SubtitleFile{
-		{1, time.Duration(time.Second*1 + time.Millisecond*602), time.Duration(time.Second*3 + time.Millisecond*314), `Έχουμε όλοι υποφέρει.`},
-		{2, time.Duration(time.Second*4 + time.Millisecond*536), time.Duration(time.Second*7 + time.Millisecond*379), `Έχουμε χάσει αγαπημένους μας.`},
-		{3, time.Duration(time.Second*10 + time.Millisecond*88), time.Duration(time.Second*14 + time.Millisecond*500), `Αυτό δεν αφορά τους Οίκους των ευγενών,
-αλλά τους ζωντανούς και τους νεκρούς.`},
-		{4, time.Duration(time.Second*14 + time.Millisecond*611), time.Duration(time.Second*16 + time.Millisecond*568), `Κι εγώ σκοπεύω να ζήσω.`},
-		{5, time.Duration(time.Second*17 + time.Millisecond*929), time.Duration(time.Second*19 + time.Millisecond*751), `Σας προσφέρω την επιλογή...`},
+		[]Subtitle{
+			{1, time.Duration(time.Second*1 + time.Millisecond*602), time.Duration(time.Second*3 + time.Millisecond*314), `Έχουμε όλοι υποφέρει.`, "", ""},
+			{2, time.Duration(time.Second*4 + time.Millisecond*536), time.Duration(time.Second*7 + time.Millisecond*379), `Έχουμε χάσει αγαπημένους μας.`, "", ""},
+			{3, time.Duration(time.Second*10 + time.Millisecond*88), time.Duration(time.Second*14 + time.Millisecond*500), `Αυτό δεν αφορά τους Οίκους των ευγενών,
+αλλά τους ζωντανούς και τους νεκρούς.`, "", ""},
+			{4, time.Duration(time.Second*14 + time.Millisecond*611), time.Duration(time.Second*16 + time.Millisecond*568), `Κι εγώ σκοπεύω να ζήσω.`, "", ""},
+			{5, time.Duration(time.Second*17 + time.Millisecond*929), time.Duration(time.Second*19 + time.Millisecond*751), `Σας προσφέρω την επιλογή...`, "", ""},
+		},
+		"",
 	}
 	_ = parsedSRTFile
 
@@ -45,8 +53,8 @@ func main() {
 	//fmt.Println(time.Duration(1*time.Second) < time.Duration(2*time.Second))
 	//a, b := AddSubtitle(subfile, `3.4s`, `3.9s`, `PEW`)
 	//fmt.Println(a, b)
-	//a, b = AddSubtitle(a, `16.570s`, `17.801s`, "PEW PEW\n PEW")
-	//fmt.Println(a, b)
+	a, b := AddSubtitle(subfile, `16.570s`, `17.801s`, "PEW PEW\n PEW")
+	fmt.Println(a, b)
 
 }
 
@@ -109,10 +117,10 @@ func StrToDuration(in string) (time.Duration, error) {
 
 func TimeshiftSubtitleFile(in SubtitleFile, shift time.Duration) SubtitleFile {
 	var res SubtitleFile
-	for _, sub := range in {
+	for _, sub := range in.Subtitles {
 		sub.Start = sub.Start + shift
 		sub.End = sub.End + shift
-		res = append(res, sub)
+		res.Subtitles = append(res.Subtitles, sub)
 	}
 	return res
 }
@@ -124,10 +132,10 @@ func PaceSubtitleFile(in SubtitleFile, rate float64) (SubtitleFile, error) {
 	}
 
 	whole, frac := math.Modf(1. / rate)
-	for _, sub := range in {
+	for _, sub := range in.Subtitles {
 		sub.Start = sub.Start*time.Duration(whole) + sub.Start*time.Duration(int(frac*1000))/1000
 		sub.End = sub.End*time.Duration(whole) + sub.End*time.Duration(int(frac*1000))/1000
-		res = append(res, sub)
+		res.Subtitles = append(res.Subtitles, sub)
 	}
 	return res, nil
 }
@@ -189,7 +197,7 @@ func ParseSRTFile(filename string) (SubtitleFile, []error) {
 		}
 
 		current.Content = strings.Join(cur[2:len(cur)], "\n")
-		res = append(res, current)
+		res.Subtitles = append(res.Subtitles, current)
 	}
 
 	//fmt.Println("Completed parsing the following SRT file :", filename)
@@ -251,7 +259,7 @@ func SearchSubtitleFile(subfile SubtitleFile, in string) ([]Subtitle, error) {
 	if err != nil {
 		return res, errors.New("The provided search term is invalid :" + in)
 	}
-	for _, sub := range subfile {
+	for _, sub := range subfile.Subtitles {
 		if r.MatchString(sub.Content) {
 			res = append(res, sub)
 		}
@@ -264,8 +272,8 @@ func SerializeSubtitles(subfile SubtitleFile) SubtitleFile {
 	// after parsing a subtitle files. Should we return some errors
 	// to help with debugging and future expansion?
 	var res SubtitleFile = subfile
-	for i, _ := range subfile {
-		res[i].Index = i + 1
+	for i, _ := range subfile.Subtitles {
+		res.Subtitles[i].Index = i + 1
 	}
 	return res
 }
@@ -277,10 +285,10 @@ func SerializeSubtitles(subfile SubtitleFile) SubtitleFile {
 func DetectOverlaps(subfile SubtitleFile) []Subtitle {
 	// Maybe in case of "longer" overlaps eg. sub 5 w/ sub 20, we should return the offending pair instead of the consecutive ones
 	var overlaps []Subtitle
-	for i := 0; i < len(subfile)-1; i++ {
-		if subfile[i].End > subfile[i+1].Start {
+	for i := 0; i < len(subfile.Subtitles)-1; i++ {
+		if subfile.Subtitles[i].End > subfile.Subtitles[i+1].Start {
 			//fmt.Println("Found an overlap between", subfile[i], subfile[i+1])
-			overlaps = append(overlaps, subfile[i], subfile[i+1])
+			overlaps = append(overlaps, subfile.Subtitles[i], subfile.Subtitles[i+1])
 		}
 	}
 	return overlaps
@@ -296,44 +304,65 @@ func RemoveSubtitle(subfile SubtitleFile, idx int) (SubtitleFile, error) {
 	// We need to use a copy, otherwise the slice will retain
 	// references to the input slice, and will have side-effects
 	// either we want to, or not
-	res := make([]Subtitle, len(subfile))
-	copy(res, subfile)
-	if idx <= 0 || idx > len(subfile) {
+	res := make([]Subtitle, len(subfile.Subtitles))
+	copy(res, subfile.Subtitles)
+	if idx <= 0 || idx > len(subfile.Subtitles) {
 		idxerr := strconv.Itoa(idx)
-		return res, errors.New("The index marked for removal is invalid :" + idxerr)
+		return SubtitleFile{res, subfile.Headers}, errors.New("The index marked for removal is invalid :" + idxerr)
 	}
 	// Turn human input to zero-based index
 	idx -= 1
 	res = append(res[:idx], res[idx+1:]...)
-	res = SerializeSubtitles(res)
-	return res, nil
+	ret := SubtitleFile{res, subfile.Headers}
+	ret = SerializeSubtitles(ret)
+	return ret, nil
 }
 
 func AddSubtitle(subfile SubtitleFile, start, end, content string) (SubtitleFile, error) {
 	var res SubtitleFile
 	startTime, _ := StrToDuration(start)
 	endTime, _ := StrToDuration(end)
+	if startTime < 0 || endTime < 0 || endTime < startTime {
+		return subfile, errors.New("Start and End times should be positive and ordered, ignoring input... " + start + " - " + end)
+	}
 	placed := false
-	for i, sub := range subfile {
+
+	// added conditional if file is dead last or dead front
+	// this is EXTREMELY bad, and should be changed asap
+	// TODO TODO TODO TODO
+	if startTime > subfile.Subtitles[len(subfile.Subtitles)-1].End {
+		res.Subtitles = append(res.Subtitles, subfile.Subtitles...)
+		res.Subtitles = append(res.Subtitles, Subtitle{len(subfile.Subtitles) + 1, startTime, endTime, content, "", ""})
+		res = SerializeSubtitles(res)
+		return res, nil
+	}
+
+	if endTime < subfile.Subtitles[0].Start {
+		res.Subtitles = append(res.Subtitles, Subtitle{1, startTime, endTime, content, "", ""})
+		res.Subtitles = append(res.Subtitles, subfile.Subtitles...)
+		res = SerializeSubtitles(res)
+		return res, nil
+	}
+	for i, sub := range subfile.Subtitles {
 		if placed == false {
-			res = append(res, sub)
+			res.Subtitles = append(res.Subtitles, sub)
 		}
 
-		if startTime > subfile[i].End && endTime < subfile[i+1].Start {
+		if startTime > subfile.Subtitles[i].End && endTime < subfile.Subtitles[i+1].Start {
 			placed = true
 			fmt.Println("Placing Sub")
 			// Bumped once for skipping current entry in loop, once for zero-based indexing
-			res = append(res, Subtitle{i + 2, startTime, endTime, content})
+			res.Subtitles = append(res.Subtitles, Subtitle{i + 2, startTime, endTime, content, "", ""})
 			continue
 		}
 
 		if placed == true {
 			// New index is n+2, one for the new entry, one for the zero-based indexing
-			res = append(res, Subtitle{i + 2, sub.Start, sub.End, sub.Content})
+			res.Subtitles = append(res.Subtitles, Subtitle{i + 2, sub.Start, sub.End, sub.Content, "", ""})
 		}
 	}
 	if placed == false {
-		return subfile, errors.New("New subtitle would overlap with existing ones, ignoring it..." + start + end)
+		return subfile, errors.New("New subtitle would overlap with existing ones, ignoring it..." + start + " - " + end)
 	}
 	return res, nil
 }
