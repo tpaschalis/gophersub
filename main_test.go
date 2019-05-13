@@ -360,9 +360,9 @@ func TestParseSRTFile(t *testing.T) {
 
 	for _, pair := range tests {
 		actual, actualErrors := ParseSRTFile(pair.input)
-		fmt.Println(actual, actualErrors)
-		fmt.Println(cmp.Equal(actual, pair.expected))
+		//fmt.Println(cmp.Equal(actual, pair.expected))
 		if !cmp.Equal(actual, pair.expected) {
+			fmt.Println(actual, actualErrors)
 			t.Errorf("Testing ParseSRTFile using %v. Expected %v but got %v instead", pair.input, pair.expected, actual)
 		}
 
@@ -408,4 +408,296 @@ func TestErrorSlicesEqual(t *testing.T) {
 			t.Errorf("Testing ErrorSlicesEqual with %v, %v. Expected errors as %v but got %v instead!", pair.in1, pair.in2, pair.expected, actual)
 		}
 	}
+}
+
+func TestDetectOverlaps(t *testing.T) {
+	type testpair struct {
+		input    SubtitleFile
+		expected []Subtitle
+	}
+	var emptyOverlaps []Subtitle
+	shortSRTFile := []Subtitle{
+		{1, time.Duration(time.Second*1 + time.Millisecond*500), time.Duration(time.Second*3 + time.Millisecond*300), `one`},
+		{2, time.Duration(time.Second*4 + time.Millisecond*520), time.Duration(time.Second*7 + time.Millisecond*300), `two`},
+		{3, time.Duration(time.Second*10 + time.Millisecond*80), time.Duration(time.Second*14 + time.Millisecond*500), `three`},
+		{4, time.Duration(time.Second*14 + time.Millisecond*600), time.Duration(time.Second*16 + time.Millisecond*200), `four`},
+		{5, time.Duration(time.Second*17 + time.Millisecond*900), time.Duration(time.Second*19 + time.Millisecond*800), `five`},
+	}
+	overlap1 := []Subtitle{
+		{1, time.Duration(time.Second*1 + time.Millisecond*500), time.Duration(time.Second*3 + time.Millisecond*300), `one`},
+		{2, time.Duration(time.Second*2 + time.Millisecond*520), time.Duration(time.Second*7 + time.Millisecond*300), `two`},
+		{3, time.Duration(time.Second*10 + time.Millisecond*80), time.Duration(time.Second*14 + time.Millisecond*500), `three`},
+		{4, time.Duration(time.Second*14 + time.Millisecond*600), time.Duration(time.Second*16 + time.Millisecond*200), `four`},
+		{5, time.Duration(time.Second*17 + time.Millisecond*900), time.Duration(time.Second*19 + time.Millisecond*800), `five`},
+	}
+	overlap2 := []Subtitle{
+		{1, time.Duration(time.Second*1 + time.Millisecond*500), time.Duration(time.Second*3 + time.Millisecond*300), `one`},
+		{2, time.Duration(time.Second*4 + time.Millisecond*520), time.Duration(time.Second*12 + time.Millisecond*300), `two`},
+		{3, time.Duration(time.Second*10 + time.Millisecond*80), time.Duration(time.Second*14 + time.Millisecond*500), `three`},
+		{4, time.Duration(time.Second*14 + time.Millisecond*600), time.Duration(time.Second*16 + time.Millisecond*200), `four`},
+		{5, time.Duration(time.Second*17 + time.Millisecond*900), time.Duration(time.Second*19 + time.Millisecond*800), `five`},
+	}
+	overlap3 := []Subtitle{
+		{1, time.Duration(time.Second*1 + time.Millisecond*500), time.Duration(time.Second*3 + time.Millisecond*300), `one`},
+		{2, time.Duration(time.Second*4 + time.Millisecond*520), time.Duration(time.Second*7 + time.Millisecond*300), `two`},
+		{3, time.Duration(time.Second*10 + time.Millisecond*80), time.Duration(time.Second*14 + time.Millisecond*500), `three`},
+		{4, time.Duration(time.Second*14 + time.Millisecond*600), time.Duration(time.Second*16 + time.Millisecond*200), `four`},
+		{5, time.Duration(time.Second*6 + time.Millisecond*900), time.Duration(time.Second*19 + time.Millisecond*800), `five`},
+	}
+
+	var tests = []testpair{
+		{
+			shortSRTFile,
+			emptyOverlaps,
+		},
+		{
+			overlap1,
+			[]Subtitle{
+				{1, time.Duration(time.Second*1 + time.Millisecond*500), time.Duration(time.Second*3 + time.Millisecond*300), `one`},
+				{2, time.Duration(time.Second*2 + time.Millisecond*520), time.Duration(time.Second*7 + time.Millisecond*300), `two`},
+			},
+		},
+		{
+			overlap2,
+			[]Subtitle{
+				{2, time.Duration(time.Second*4 + time.Millisecond*520), time.Duration(time.Second*12 + time.Millisecond*300), `two`},
+				{3, time.Duration(time.Second*10 + time.Millisecond*80), time.Duration(time.Second*14 + time.Millisecond*500), `three`},
+			},
+		},
+		{
+			overlap3,
+			[]Subtitle{
+				{4, time.Duration(time.Second*14 + time.Millisecond*600), time.Duration(time.Second*16 + time.Millisecond*200), `four`},
+				{5, time.Duration(time.Second*6 + time.Millisecond*900), time.Duration(time.Second*19 + time.Millisecond*800), `five`},
+			},
+		},
+		{
+			[]Subtitle{},
+			[]Subtitle{},
+		},
+	}
+
+	for _, pair := range tests {
+		actual := DetectOverlaps(pair.input)
+		if len(actual) == 0 && len(pair.expected) != 0 {
+			t.Errorf("Testing DetectOverlaps with empty input %v. Expected %v but got %v instead!", pair.input, pair.expected, actual)
+		}
+		if len(actual) != 0 && !cmp.Equal(actual, pair.expected) {
+			t.Errorf("Testing DetectOverlaps with %v. Expected %v but got %v instead!", pair.input, pair.expected, actual)
+		}
+
+	}
+
+}
+
+func TestSerializeSubtitles(t *testing.T) {
+	type testpair struct {
+		input    SubtitleFile
+		expected SubtitleFile
+	}
+
+	shortSRTFile := SubtitleFile{
+		{1, time.Duration(time.Second*1 + time.Millisecond*602), time.Duration(time.Second*3 + time.Millisecond*314), `Έχουμε όλοι υποφέρει.`},
+		{2, time.Duration(time.Second*4 + time.Millisecond*536), time.Duration(time.Second*7 + time.Millisecond*379), `Έχουμε χάσει αγαπημένους μας.`},
+		{3, time.Duration(time.Second*10 + time.Millisecond*88), time.Duration(time.Second*14 + time.Millisecond*500), `Αυτό δεν αφορά τους Οίκους των ευγενών,
+αλλά τους ζωντανούς και τους νεκρούς.`},
+		{4, time.Duration(time.Second*14 + time.Millisecond*611), time.Duration(time.Second*16 + time.Millisecond*568), `Κι εγώ σκοπεύω να ζήσω.`},
+		{5, time.Duration(time.Second*17 + time.Millisecond*929), time.Duration(time.Second*19 + time.Millisecond*751), `Σας προσφέρω την επιλογή...`},
+	}
+
+	var tests = []testpair{
+		{
+			SubtitleFile{
+				{0, time.Duration(time.Second*1 + time.Millisecond*602), time.Duration(time.Second*3 + time.Millisecond*314), `Έχουμε όλοι υποφέρει.`},
+				{0, time.Duration(time.Second*4 + time.Millisecond*536), time.Duration(time.Second*7 + time.Millisecond*379), `Έχουμε χάσει αγαπημένους μας.`},
+				{0, time.Duration(time.Second*10 + time.Millisecond*88), time.Duration(time.Second*14 + time.Millisecond*500), `Αυτό δεν αφορά τους Οίκους των ευγενών,
+αλλά τους ζωντανούς και τους νεκρούς.`},
+				{0, time.Duration(time.Second*14 + time.Millisecond*611), time.Duration(time.Second*16 + time.Millisecond*568), `Κι εγώ σκοπεύω να ζήσω.`},
+				{0, time.Duration(time.Second*17 + time.Millisecond*929), time.Duration(time.Second*19 + time.Millisecond*751), `Σας προσφέρω την επιλογή...`},
+			},
+			shortSRTFile,
+		},
+		{
+			SubtitleFile{
+				{1, time.Duration(time.Second*1 + time.Millisecond*602), time.Duration(time.Second*3 + time.Millisecond*314), `Έχουμε όλοι υποφέρει.`},
+				{1, time.Duration(time.Second*4 + time.Millisecond*536), time.Duration(time.Second*7 + time.Millisecond*379), `Έχουμε χάσει αγαπημένους μας.`},
+				{3, time.Duration(time.Second*10 + time.Millisecond*88), time.Duration(time.Second*14 + time.Millisecond*500), `Αυτό δεν αφορά τους Οίκους των ευγενών,
+αλλά τους ζωντανούς και τους νεκρούς.`},
+				{5, time.Duration(time.Second*14 + time.Millisecond*611), time.Duration(time.Second*16 + time.Millisecond*568), `Κι εγώ σκοπεύω να ζήσω.`},
+				{5, time.Duration(time.Second*17 + time.Millisecond*929), time.Duration(time.Second*19 + time.Millisecond*751), `Σας προσφέρω την επιλογή...`},
+			},
+			shortSRTFile,
+		},
+		{
+			SubtitleFile{
+				{1, time.Duration(time.Second*1 + time.Millisecond*602), time.Duration(time.Second*3 + time.Millisecond*314), `Έχουμε όλοι υποφέρει.`},
+				{3, time.Duration(time.Second*4 + time.Millisecond*536), time.Duration(time.Second*7 + time.Millisecond*379), `Έχουμε χάσει αγαπημένους μας.`},
+				{2, time.Duration(time.Second*10 + time.Millisecond*88), time.Duration(time.Second*14 + time.Millisecond*500), `Αυτό δεν αφορά τους Οίκους των ευγενών,
+αλλά τους ζωντανούς και τους νεκρούς.`},
+				{5, time.Duration(time.Second*14 + time.Millisecond*611), time.Duration(time.Second*16 + time.Millisecond*568), `Κι εγώ σκοπεύω να ζήσω.`},
+				{4, time.Duration(time.Second*17 + time.Millisecond*929), time.Duration(time.Second*19 + time.Millisecond*751), `Σας προσφέρω την επιλογή...`},
+			},
+			shortSRTFile,
+		},
+		{
+			SubtitleFile{
+				{-1, time.Duration(time.Second*1 + time.Millisecond*602), time.Duration(time.Second*3 + time.Millisecond*314), `Έχουμε όλοι υποφέρει.`},
+				{-2, time.Duration(time.Second*4 + time.Millisecond*536), time.Duration(time.Second*7 + time.Millisecond*379), `Έχουμε χάσει αγαπημένους μας.`},
+				{-3, time.Duration(time.Second*10 + time.Millisecond*88), time.Duration(time.Second*14 + time.Millisecond*500), `Αυτό δεν αφορά τους Οίκους των ευγενών,
+αλλά τους ζωντανούς και τους νεκρούς.`},
+				{100, time.Duration(time.Second*14 + time.Millisecond*611), time.Duration(time.Second*16 + time.Millisecond*568), `Κι εγώ σκοπεύω να ζήσω.`},
+				{234325, time.Duration(time.Second*17 + time.Millisecond*929), time.Duration(time.Second*19 + time.Millisecond*751), `Σας προσφέρω την επιλογή...`},
+			},
+			shortSRTFile,
+		},
+		{
+			[]Subtitle{},
+			[]Subtitle{},
+		},
+		//{},
+		//{},
+	}
+
+	for _, pair := range tests {
+		actual := SerializeSubtitles(pair.input)
+		if !cmp.Equal(actual, pair.expected) {
+			t.Errorf("Testing SerializeSubtitles using %v. Expected %v but got %v instead!", pair.input, pair.expected, actual)
+		}
+	}
+}
+
+func TestRemoveSubtitles(t *testing.T) {
+	type testpair struct {
+		in1         SubtitleFile
+		in2         int
+		expected    SubtitleFile
+		expectedErr error
+	}
+
+	shortSRTFile1 := SubtitleFile{
+		{1, time.Duration(time.Second*1 + time.Millisecond*602), time.Duration(time.Second*3 + time.Millisecond*314), `Έχουμε όλοι υποφέρει.`},
+		{2, time.Duration(time.Second*4 + time.Millisecond*536), time.Duration(time.Second*7 + time.Millisecond*379), `Έχουμε χάσει αγαπημένους μας.`},
+		{3, time.Duration(time.Second*10 + time.Millisecond*88), time.Duration(time.Second*14 + time.Millisecond*500), `Αυτό δεν αφορά τους Οίκους των ευγενών,
+αλλά τους ζωντανούς και τους νεκρούς.`},
+		{4, time.Duration(time.Second*14 + time.Millisecond*611), time.Duration(time.Second*16 + time.Millisecond*568), `Κι εγώ σκοπεύω να ζήσω.`},
+		{5, time.Duration(time.Second*17 + time.Millisecond*929), time.Duration(time.Second*19 + time.Millisecond*751), `Σας προσφέρω την επιλογή..`},
+	}
+	var tests = []testpair{
+		{
+			shortSRTFile1,
+			-1,
+			shortSRTFile1,
+			errors.New("The index marked for removal is invalid :-1"),
+		},
+		{
+			shortSRTFile1,
+			-9,
+			shortSRTFile1,
+			errors.New("The index marked for removal is invalid :-9"),
+		},
+		{
+			shortSRTFile1,
+			0,
+			shortSRTFile1,
+			errors.New("The index marked for removal is invalid :0"),
+		},
+		{
+			shortSRTFile1,
+			99,
+			shortSRTFile1,
+			errors.New("The index marked for removal is invalid :99"),
+		},
+		{
+			//			[]Subtitle{
+			//				{1, time.Duration(time.Second*1 + time.Millisecond*602), time.Duration(time.Second*3 + time.Millisecond*314), `Έχουμε όλοι υποφέρει.`},
+			//				{2, time.Duration(time.Second*4 + time.Millisecond*536), time.Duration(time.Second*7 + time.Millisecond*379), `Έχουμε χάσει αγαπημένους μας.`},
+			//				{3, time.Duration(time.Second*10 + time.Millisecond*88), time.Duration(time.Second*14 + time.Millisecond*500), `Αυτό δεν αφορά τους Οίκους των ευγενών,
+			//αλλά τους ζωντανούς και τους νεκρούς.`},
+			//				{4, time.Duration(time.Second*14 + time.Millisecond*611), time.Duration(time.Second*16 + time.Millisecond*568), `Κι εγώ σκοπεύω να ζήσω.`},
+			//				{5, time.Duration(time.Second*17 + time.Millisecond*929), time.Duration(time.Second*19 + time.Millisecond*751), `Σας προσφέρω την επιλογή..`},
+			//			},
+			shortSRTFile1,
+			2,
+			[]Subtitle{
+				{1, time.Duration(time.Second*1 + time.Millisecond*602), time.Duration(time.Second*3 + time.Millisecond*314), `Έχουμε όλοι υποφέρει.`},
+				{2, time.Duration(time.Second*10 + time.Millisecond*88), time.Duration(time.Second*14 + time.Millisecond*500), `Αυτό δεν αφορά τους Οίκους των ευγενών,
+αλλά τους ζωντανούς και τους νεκρούς.`},
+				{3, time.Duration(time.Second*14 + time.Millisecond*611), time.Duration(time.Second*16 + time.Millisecond*568), `Κι εγώ σκοπεύω να ζήσω.`},
+				{4, time.Duration(time.Second*17 + time.Millisecond*929), time.Duration(time.Second*19 + time.Millisecond*751), `Σας προσφέρω την επιλογή..`},
+			},
+			nil,
+		},
+		{
+			shortSRTFile1,
+			4,
+			[]Subtitle{
+				{1, time.Duration(time.Second*1 + time.Millisecond*602), time.Duration(time.Second*3 + time.Millisecond*314), `Έχουμε όλοι υποφέρει.`},
+				{2, time.Duration(time.Second*4 + time.Millisecond*536), time.Duration(time.Second*7 + time.Millisecond*379), `Έχουμε χάσει αγαπημένους μας.`},
+				{3, time.Duration(time.Second*10 + time.Millisecond*88), time.Duration(time.Second*14 + time.Millisecond*500), `Αυτό δεν αφορά τους Οίκους των ευγενών,
+αλλά τους ζωντανούς και τους νεκρούς.`},
+				{4, time.Duration(time.Second*17 + time.Millisecond*929), time.Duration(time.Second*19 + time.Millisecond*751), `Σας προσφέρω την επιλογή..`},
+			},
+			nil,
+		},
+		{
+			shortSRTFile1,
+			1,
+			[]Subtitle{
+				{1, time.Duration(time.Second*4 + time.Millisecond*536), time.Duration(time.Second*7 + time.Millisecond*379), `Έχουμε χάσει αγαπημένους μας.`},
+				{2, time.Duration(time.Second*10 + time.Millisecond*88), time.Duration(time.Second*14 + time.Millisecond*500), `Αυτό δεν αφορά τους Οίκους των ευγενών,
+αλλά τους ζωντανούς και τους νεκρούς.`},
+				{3, time.Duration(time.Second*14 + time.Millisecond*611), time.Duration(time.Second*16 + time.Millisecond*568), `Κι εγώ σκοπεύω να ζήσω.`},
+				{4, time.Duration(time.Second*17 + time.Millisecond*929), time.Duration(time.Second*19 + time.Millisecond*751), `Σας προσφέρω την επιλογή..`},
+			},
+			nil,
+		},
+		{
+			shortSRTFile1,
+			5,
+			[]Subtitle{
+				{1, time.Duration(time.Second*1 + time.Millisecond*602), time.Duration(time.Second*3 + time.Millisecond*314), `Έχουμε όλοι υποφέρει.`},
+				{2, time.Duration(time.Second*4 + time.Millisecond*536), time.Duration(time.Second*7 + time.Millisecond*379), `Έχουμε χάσει αγαπημένους μας.`},
+				{3, time.Duration(time.Second*10 + time.Millisecond*88), time.Duration(time.Second*14 + time.Millisecond*500), `Αυτό δεν αφορά τους Οίκους των ευγενών,
+αλλά τους ζωντανούς και τους νεκρούς.`},
+				{4, time.Duration(time.Second*14 + time.Millisecond*611), time.Duration(time.Second*16 + time.Millisecond*568), `Κι εγώ σκοπεύω να ζήσω.`},
+			},
+			nil,
+		},
+	}
+
+	for _, pair := range tests {
+		var actual SubtitleFile
+		var actualErr error
+		actual, actualErr = RemoveSubtitle(pair.in1, pair.in2)
+		if actualErr != nil && pair.expectedErr.Error() != actualErr.Error() {
+			t.Errorf("Testing RemoveSubtitle using %v. Expected error %v but got %v instead!", pair.in2, pair.expectedErr, actualErr)
+		}
+		if !cmp.Equal(actual, pair.expected) {
+			t.Errorf("Testing RemoveSubtitle using %v, %v. Expected %v but got %v instead!", pair.in1, pair.in2, pair.expected, actual)
+		}
+	}
+}
+
+func TestAddSubtitle(t *testing.T) {
+	type testpair struct {
+		in1         SubtitleFile
+		in2         string
+		in3         string
+		in4         string
+		expected    SubtitleFile
+		expectedErr error
+	}
+
+	//for _, pair := range tests {
+	//	var actual SubtitleFile
+	//	var actualErr error
+	//	actual, actualErr = AddSubtitle(pair.in1, pair.in2, pair.in3, pair.in4)
+
+	//	if actualErr != nil && pair.expectedErr.Error() != actualErr.Error() {
+	//		t.Errorf("Testing AddSubtitle using %v. Expected error %v but got %v instead!", pair.in2, pair.expectedErr, actualErr)
+	//	}
+	//	if !cmp.Equal(actual, pair.expected) {
+	//		t.Errorf("Testing AddSubtitle using %v, %v. Expected %v but got %v instead!", pair.in1, pair.in2, pair.expected, actual)
+	//	}
+	//}
 }

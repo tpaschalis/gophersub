@@ -38,6 +38,16 @@ func main() {
 		{5, time.Duration(time.Second*17 + time.Millisecond*929), time.Duration(time.Second*19 + time.Millisecond*751), `Σας προσφέρω την επιλογή...`},
 	}
 	_ = parsedSRTFile
+
+	subfile, _ := ParseSRTFile("samples/sample.srt")
+	_ = subfile
+
+	//fmt.Println(time.Duration(1*time.Second) < time.Duration(2*time.Second))
+	//a, b := AddSubtitle(subfile, `3.4s`, `3.9s`, `PEW`)
+	//fmt.Println(a, b)
+	//a, b = AddSubtitle(a, `16.570s`, `17.801s`, "PEW PEW\n PEW")
+	//fmt.Println(a, b)
+
 }
 
 func DurationToTimestampSRT(d time.Duration) string {
@@ -45,7 +55,7 @@ func DurationToTimestampSRT(d time.Duration) string {
 	var second float64
 	stringDuration, err := time.ParseDuration(d.String())
 	if err != nil {
-		fmt.Println("Could not parse provided time.Duration")
+		//fmt.Println("Could not parse provided time.Duration")
 		panic(err)
 	}
 	hour = int(stringDuration.Hours())
@@ -136,7 +146,7 @@ func ParseSRTFile(filename string) (SubtitleFile, []error) {
 	file, err := os.Open(filename)
 
 	if err != nil {
-		fmt.Println(err)
+		//fmt.Println(err)
 		return res, []error{errors.New("Something went wrong while trying to parse the provided file!")}
 	}
 	srt := string(content)
@@ -153,7 +163,7 @@ func ParseSRTFile(filename string) (SubtitleFile, []error) {
 
 		idx, err1 := strconv.Atoi(cur[0])
 		if err1 != nil {
-			fmt.Println("Error in block :", cur, "\nCould not parse an index correctly")
+			//fmt.Println("Error in block :", cur, "\nCould not parse an index correctly")
 			errCollection = append(errCollection, err1)
 		} else {
 			current.Index = idx
@@ -164,7 +174,7 @@ func ParseSRTFile(filename string) (SubtitleFile, []error) {
 
 		start, err2 := TimestampToDurationSRT(r1.FindString(cur[1]))
 		if err2 != nil {
-			fmt.Println("Error in block :", cur, "\nCould not parse Start Timestamp correctly")
+			//fmt.Println("Error in block :", cur, "\nCould not parse Start Timestamp correctly")
 			errCollection = append(errCollection, err2)
 		} else {
 			current.Start = start
@@ -172,7 +182,7 @@ func ParseSRTFile(filename string) (SubtitleFile, []error) {
 
 		end, err3 := TimestampToDurationSRT(r2.FindString(cur[1]))
 		if err3 != nil {
-			fmt.Println("Error in block :", cur, "\nCould not parse End Timestamp correctly")
+			//fmt.Println("Error in block :", cur, "\nCould not parse End Timestamp correctly")
 			errCollection = append(errCollection, err3)
 		} else {
 			current.End = end
@@ -182,12 +192,12 @@ func ParseSRTFile(filename string) (SubtitleFile, []error) {
 		res = append(res, current)
 	}
 
-	fmt.Println("Completed parsing the following SRT file :", filename)
-	fmt.Println("Parsed a total of", len(res), "subtitle lines")
-	if len(errCollection) != 0 {
-		fmt.Println("Encountered a total of", len(errCollection), "issues, as presented below :")
-		fmt.Println(errCollection)
-	}
+	//fmt.Println("Completed parsing the following SRT file :", filename)
+	//fmt.Println("Parsed a total of", len(res), "subtitle lines")
+	//if len(errCollection) != 0 {
+	//fmt.Println("Encountered a total of", len(errCollection), "issues, as presented below :")
+	//fmt.Println(errCollection)
+	//}
 
 	return res, errCollection
 }
@@ -229,4 +239,101 @@ func ErrorSlicesEqual(a, b []error) bool {
 		}
 	}
 	return true
+}
+
+// SearchSubtitleFile scans the contents of all subtitle entries
+// in a subtitle file for matches with the provided string,
+// which can be a valid Regular Expression.
+// It returns a slice of all entries that matched this input.
+func SearchSubtitleFile(subfile SubtitleFile, in string) ([]Subtitle, error) {
+	var res []Subtitle
+	r, err := regexp.Compile(in)
+	if err != nil {
+		return res, errors.New("The provided search term is invalid :" + in)
+	}
+	for _, sub := range subfile {
+		if r.MatchString(sub.Content) {
+			res = append(res, sub)
+		}
+	}
+	return res, nil
+}
+
+func SerializeSubtitles(subfile SubtitleFile) SubtitleFile {
+	// This is a simple operation, that normally would take place
+	// after parsing a subtitle files. Should we return some errors
+	// to help with debugging and future expansion?
+	var res SubtitleFile = subfile
+	for i, _ := range subfile {
+		res[i].Index = i + 1
+	}
+	return res
+}
+
+// DetectOverlaps scans the provided subtitle file serially,
+// and checks consecutive subtitles for invalid start/end times
+// Returns the pair or pairs of subtitles where overlaps where detected,
+// one of which is the culprit
+func DetectOverlaps(subfile SubtitleFile) []Subtitle {
+	// Maybe in case of "longer" overlaps eg. sub 5 w/ sub 20, we should return the offending pair instead of the consecutive ones
+	var overlaps []Subtitle
+	for i := 0; i < len(subfile)-1; i++ {
+		if subfile[i].End > subfile[i+1].Start {
+			//fmt.Println("Found an overlap between", subfile[i], subfile[i+1])
+			overlaps = append(overlaps, subfile[i], subfile[i+1])
+		}
+	}
+	return overlaps
+}
+
+func ConvertToUTF8(filename string) {
+}
+
+func RemoveSubtitle(subfile SubtitleFile, idx int) (SubtitleFile, error) {
+	// For now, we assume that the provided SubtitleFile is okay
+	// and that the parser has taken care of any glaring issues
+
+	// We need to use a copy, otherwise the slice will retain
+	// references to the input slice, and will have side-effects
+	// either we want to, or not
+	res := make([]Subtitle, len(subfile))
+	copy(res, subfile)
+	if idx <= 0 || idx > len(subfile) {
+		idxerr := strconv.Itoa(idx)
+		return res, errors.New("The index marked for removal is invalid :" + idxerr)
+	}
+	// Turn human input to zero-based index
+	idx -= 1
+	res = append(res[:idx], res[idx+1:]...)
+	res = SerializeSubtitles(res)
+	return res, nil
+}
+
+func AddSubtitle(subfile SubtitleFile, start, end, content string) (SubtitleFile, error) {
+	var res SubtitleFile
+	startTime, _ := StrToDuration(start)
+	endTime, _ := StrToDuration(end)
+	placed := false
+	for i, sub := range subfile {
+		if placed == false {
+			res = append(res, sub)
+		}
+
+		if startTime > subfile[i].End && endTime < subfile[i+1].Start {
+			placed = true
+			fmt.Println("Placing Sub")
+			// Bumped once for skipping current entry in loop, once for zero-based indexing
+			res = append(res, Subtitle{i + 2, startTime, endTime, content})
+			continue
+		}
+
+		if placed == true {
+			// New index is n+2, one for the new entry, one for the zero-based indexing
+			res = append(res, Subtitle{i + 2, sub.Start, sub.End, sub.Content})
+		}
+	}
+	if placed == false {
+		return subfile, errors.New("New subtitle would overlap with existing ones, ignoring it..." + start + end)
+	}
+	return res, nil
 }
