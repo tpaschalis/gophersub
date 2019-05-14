@@ -903,3 +903,68 @@ func ExamplePrintSubfileInfo() {
 	//Lowest Character-Per-Minute : 1.06 on subtitle index : 2
 	//Average Character-Per-Minute : 0.66
 }
+
+func TestSearchSubtitleFile(t *testing.T) {
+	type testpair struct {
+		input       SubtitleFile
+		searchterm  string
+		expected    []Subtitle
+		expectedErr error
+	}
+
+	var emptySubtitleSlice []Subtitle
+
+	shortSRTFile := SubtitleFile{
+		[]Subtitle{
+			{1, time.Duration(time.Second*1 + time.Millisecond*602), time.Duration(time.Second*3 + time.Millisecond*314), `Έχουμε όλοι υποφέρει.`, "", ""},
+			{2, time.Duration(time.Second*4 + time.Millisecond*536), time.Duration(time.Second*7 + time.Millisecond*379), `Έχουμε χάσει αγαπημένους μας.`, "", ""},
+			{3, time.Duration(time.Second*10 + time.Millisecond*88), time.Duration(time.Second*14 + time.Millisecond*500), `Αυτό δεν αφορά τους Οίκους των ευγενών,
+αλλά τους ζωντανούς και τους νεκρούς.`, "", ""},
+			{4, time.Duration(time.Second*14 + time.Millisecond*611), time.Duration(time.Second*16 + time.Millisecond*568), `Κι εγώ σκοπεύω να ζήσω.`, "", ""},
+			{5, time.Duration(time.Second*17 + time.Millisecond*929), time.Duration(time.Second*19 + time.Millisecond*751), `Σας προσφέρω την επιλογή..`, "", ""},
+		},
+		"",
+	}
+
+	var tests = []testpair{
+		{
+			shortSRTFile,
+			`Έχουμε`,
+			[]Subtitle{
+				{1, time.Duration(time.Second*1 + time.Millisecond*602), time.Duration(time.Second*3 + time.Millisecond*314), `Έχουμε όλοι υποφέρει.`, "", ""},
+				{2, time.Duration(time.Second*4 + time.Millisecond*536), time.Duration(time.Second*7 + time.Millisecond*379), `Έχουμε χάσει αγαπημένους μας.`, "", ""},
+			},
+			nil,
+		},
+		{
+			shortSRTFile,
+			`έ|ύ`,
+			[]Subtitle{
+				{1, time.Duration(time.Second*1 + time.Millisecond*602), time.Duration(time.Second*3 + time.Millisecond*314), `Έχουμε όλοι υποφέρει.`, "", ""},
+				{2, time.Duration(time.Second*4 + time.Millisecond*536), time.Duration(time.Second*7 + time.Millisecond*379), `Έχουμε χάσει αγαπημένους μας.`, "", ""},
+				{3, time.Duration(time.Second*10 + time.Millisecond*88), time.Duration(time.Second*14 + time.Millisecond*500), `Αυτό δεν αφορά τους Οίκους των ευγενών,
+αλλά τους ζωντανούς και τους νεκρούς.`, "", ""},
+				{4, time.Duration(time.Second*14 + time.Millisecond*611), time.Duration(time.Second*16 + time.Millisecond*568), `Κι εγώ σκοπεύω να ζήσω.`, "", ""},
+				{5, time.Duration(time.Second*17 + time.Millisecond*929), time.Duration(time.Second*19 + time.Millisecond*751), `Σας προσφέρω την επιλογή..`, "", ""},
+			},
+			nil,
+		},
+		{
+			shortSRTFile,
+			`[`,
+			emptySubtitleSlice,
+			errors.New("The provided search term is invalid :`[`"),
+		},
+	}
+
+	for _, pair := range tests {
+		actual, actualErr := SearchSubtitleFile(pair.input, pair.searchterm)
+
+		if actualErr != nil && pair.expectedErr.Error() != actualErr.Error() {
+			t.Errorf("Testing SearchSubtitleFile using %v. Expected error %v but got %v instead!", pair.input, pair.searchterm, actualErr)
+		}
+		if !cmp.Equal(actual, pair.expected) {
+			t.Errorf("Testing SearchSubtitleFile using %v, %v. Expected %v but got %v instead!", pair.input, pair.searchterm, pair.expected, actual)
+		}
+	}
+}

@@ -34,7 +34,6 @@ type SubtitleFile struct {
 }
 
 func main() {
-
 }
 
 func DurationToTimestampSRT(d time.Duration) string {
@@ -133,7 +132,6 @@ func ParseSRTFile(filename string) (SubtitleFile, []error) {
 	file, err := os.Open(filename)
 
 	if err != nil {
-		//fmt.Println(err)
 		return res, []error{errors.New("Something went wrong while trying to parse the provided file!")}
 	}
 	srt := string(content)
@@ -145,12 +143,10 @@ func ParseSRTFile(filename string) (SubtitleFile, []error) {
 
 	for reader.s.Scan() {
 		var current Subtitle
-		//cur := strings.Split(reader.s.Text(), "\n")
 		cur := strings.FieldsFunc(reader.s.Text(), EOLSplit)
 
 		idx, err1 := strconv.Atoi(cur[0])
 		if err1 != nil {
-			//fmt.Println("Error in block :", cur, "\nCould not parse an index correctly")
 			errCollection = append(errCollection, err1)
 		} else {
 			current.Index = idx
@@ -161,7 +157,6 @@ func ParseSRTFile(filename string) (SubtitleFile, []error) {
 
 		start, err2 := TimestampToDurationSRT(r1.FindString(cur[1]))
 		if err2 != nil {
-			//fmt.Println("Error in block :", cur, "\nCould not parse Start Timestamp correctly")
 			errCollection = append(errCollection, err2)
 		} else {
 			current.Start = start
@@ -169,7 +164,6 @@ func ParseSRTFile(filename string) (SubtitleFile, []error) {
 
 		end, err3 := TimestampToDurationSRT(r2.FindString(cur[1]))
 		if err3 != nil {
-			//fmt.Println("Error in block :", cur, "\nCould not parse End Timestamp correctly")
 			errCollection = append(errCollection, err3)
 		} else {
 			current.End = end
@@ -179,27 +173,16 @@ func ParseSRTFile(filename string) (SubtitleFile, []error) {
 		res.Subtitles = append(res.Subtitles, current)
 	}
 
-	//fmt.Println("Completed parsing the following SRT file :", filename)
-	//fmt.Println("Parsed a total of", len(res), "subtitle lines")
-	//if len(errCollection) != 0 {
-	//fmt.Println("Encountered a total of", len(errCollection), "issues, as presented below :")
-	//fmt.Println(errCollection)
-	//}
-
 	return res, errCollection
 }
 
 func SRTScanner(data []byte, atEOF bool) (adv int, token []byte, err error) {
 	for i := 0; i < len(data); i++ {
 		if i < len(data)-1 && string(data[i:i+2]) == "\n\n" {
-			// Do not return the empty lines at the end of the detected block
 			return i + 2, data[:i+2], nil
-			//return i + 2, data[:i], nil
 		}
 		if i < len(data)-3 && string(data[i:i+4]) == "\r\n\r\n" {
-			// Do not return the empty lines at the end of the detected block
 			return i + 4, data[:i+4], nil
-			//return i + 4, data[:i], nil
 		}
 	}
 	if atEOF && len(data) != 0 {
@@ -236,7 +219,7 @@ func SearchSubtitleFile(subfile SubtitleFile, in string) ([]Subtitle, error) {
 	var res []Subtitle
 	r, err := regexp.Compile(in)
 	if err != nil {
-		return res, errors.New("The provided search term is invalid :" + in)
+		return res, errors.New("The provided search term is invalid :`" + in + "`")
 	}
 	for _, sub := range subfile.Subtitles {
 		if r.MatchString(sub.Content) {
@@ -266,7 +249,6 @@ func DetectOverlaps(subfile SubtitleFile) []Subtitle {
 	var overlaps []Subtitle
 	for i := 0; i < len(subfile.Subtitles)-1; i++ {
 		if subfile.Subtitles[i].End > subfile.Subtitles[i+1].Start {
-			//fmt.Println("Found an overlap between", subfile[i], subfile[i+1])
 			overlaps = append(overlaps, subfile.Subtitles[i], subfile.Subtitles[i+1])
 		}
 	}
