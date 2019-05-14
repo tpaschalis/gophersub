@@ -7,7 +7,7 @@ go-subtitles aims to be a powerful library, that makes working with subtitle fil
 * Works with SubRip `.srt` and WebVTT `.vtt` files
 * Designed with modularity and extensibility in mind
 * Extensively tested using Table-Driven Tests. Always at >95% coverage
-* Easy to work with, either as an imported package (a command-line application is in the works)
+* Easy to work with, either as an imported package or a command-line application (soon!)
 
 Most of the actions you might expect from such a tool are already implemented! 
 
@@ -17,7 +17,7 @@ One of the most nifty features, is that it allows to parse a collection of subti
 
 
 ## Roadmap 
-Since starting the 'project' I've been jotting down my brainstorming, and created a notepad of ideas that I'd like to implement in the future. All these ideas are available  [roadmap.md"
+Since starting the 'project' I've been jotting down my brainstorming, and created a notepad of ideas that I'd like to implement in the future. All these ideas are available [roadmap.md](/roadmap.md). You're more than welcome to take a look, and propose new ones!
 
 
 ## Examples
@@ -51,5 +51,15 @@ PrintSubfileInfo(got)
 ```
 
 ## Prerequisites
+* Go >= 1.12
+* [`go-cmp`](https://github.com/google/go-cmp/) to compare structs, in place of reflection
+
+
+The dependencies can be installed by running
+```
+go get -u github.com/google/go-cmp/cmp
+```
+The library requires at least Go 1.12. Most of the functionality was developed using the standard library, and conscious steps to avoid complicated dependencies 
+github.com/google/go-cmp/cmp
 
 ## Installation
