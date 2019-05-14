@@ -16,11 +16,12 @@ Feel free to open an issue, or create a pull request for anything you might want
 
 - [x] Parse and Write to SRT Format
 - [ ] Encode subtitles in different formats, change/preview their encoding
-- [ ] Add/Remove/Modify subtitles
+- [x] Add/Remove subtitles
+- [ ] Modify subtitles
 - [ ] Synchronize subtitles by adding-removing time from the whole file or a specific section (and then add audio-detection so it's done automatically)
 - [x] Change subtitle duration in either *relative* or *absolute* time
 - [ ] Search-and-replace subtitle text strings
-- [ ] Find overlapping subtitles
+- [x] Find overlapping subtitles
 - [ ] Re-index (and re-sort) subtitles based on start times
 - [ ] Auto report problems in subtitles (malformed files, non-sequential entries, and whatnot)
 - [ ] Run SQL queries in one or more subtitles that exist in a directory
