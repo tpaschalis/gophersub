@@ -878,3 +878,28 @@ PEW`, "", ""},
 		}
 	}
 }
+
+func ExamplePrintSubfileInfo() {
+
+	in := SubtitleFile{
+		[]Subtitle{
+			{1, time.Duration(time.Second*1 + time.Millisecond*602), time.Duration(time.Second*3 + time.Millisecond*314), `one`, "", ""},
+			{2, time.Duration(time.Second*4 + time.Millisecond*536), time.Duration(time.Second*7 + time.Millisecond*379), `two`, "", ""},
+			{3, time.Duration(time.Second*10 + time.Millisecond*88), time.Duration(time.Second*14 + time.Millisecond*500), `three.`, "", ""},
+			{4, time.Duration(time.Second*14 + time.Millisecond*611), time.Duration(time.Second*16 + time.Millisecond*568), `four`, "", ""},
+			{5, time.Duration(time.Second*17 + time.Millisecond*929), time.Duration(time.Second*19 + time.Millisecond*751), `five`, "", ""},
+		},
+		"sample_headers",
+	}
+
+	PrintSubfileInfo(in)
+	// Output: Headers : sample_headers
+	//Number of subtitles : 5
+	//Start Time : 1.602s
+	//End Time : 19.751s
+	//First-to-last Runtime : 18.149s
+	//Subtitle Runtime : 12.745999999999999
+	//Highest Character-Per-Minute : 2.20 on subtitle index : 5
+	//Lowest Character-Per-Minute : 1.06 on subtitle index : 2
+	//Average Character-Per-Minute : 0.66
+}

@@ -34,6 +34,7 @@ type SubtitleFile struct {
 }
 
 func main() {
+
 }
 
 func DurationToTimestampSRT(d time.Duration) string {
@@ -345,4 +346,32 @@ func AddSubtitle(subfile SubtitleFile, start, end, content, metadata, header str
 }
 
 func PrintSubfileInfo(subfile SubtitleFile) {
+
+	cpmLo, cpmHi, cpmAvg, runtime := 10000., 0., 0., 0.
+	cpmLoIdx, cpmHiIdx, runtime := 0, 0, 0.
+	for _, sub := range subfile.Subtitles {
+		currentDur := (sub.End - sub.Start).Seconds()
+		currentCpm := float64(len(sub.Content)) / currentDur
+		if currentCpm > cpmHi {
+			cpmHi = currentCpm
+			cpmHiIdx = sub.Index
+		}
+		if currentCpm < cpmLo {
+			cpmLo = currentCpm
+			cpmLoIdx = sub.Index
+		}
+		cpmAvg += currentCpm
+		runtime += currentDur
+	}
+	cpmAvg = cpmAvg / runtime
+
+	fmt.Printf("Headers : %v\n", subfile.Headers)
+	fmt.Printf("Number of subtitles : %d\n", len(subfile.Subtitles))
+	fmt.Printf("Start Time : %v\n", subfile.Subtitles[0].Start)
+	fmt.Printf("End Time : %v\n", subfile.Subtitles[len(subfile.Subtitles)-1].End)
+	fmt.Printf("First-to-last Runtime : %v\n", (subfile.Subtitles[len(subfile.Subtitles)-1].End - subfile.Subtitles[0].Start))
+	fmt.Printf("Subtitle Runtime : %v\n", runtime)
+	fmt.Printf("Highest Character-Per-Minute : %.2f on subtitle index : %d\n", cpmHi, cpmHiIdx)
+	fmt.Printf("Lowest Character-Per-Minute : %.2f on subtitle index : %d\n", cpmLo, cpmLoIdx)
+	fmt.Printf("Average Character-Per-Minute : %.2f\n ", cpmAvg)
 }
