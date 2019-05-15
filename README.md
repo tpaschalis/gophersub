@@ -56,10 +56,10 @@ PrintSubfileInfo(got)
 
 ## Prerequisites
 * Go >= 1.12
-* [`go-cmp`](https://github.com/google/go-cmp/) to compare structs, in place of reflection
+* `go-cmp`(https://github.com/google/go-cmp/) to compare structs, in place of reflection
 
 
-The dependencies can be installed by running
+go-cmp is used to compare structs, in place of reflection and can be installed by running
 ```
 go get -u github.com/google/go-cmp/cmp
 ```
