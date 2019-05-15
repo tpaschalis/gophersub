@@ -1,6 +1,10 @@
 # go-subtitles
 Go library and command-line utility to work with subtitle files.
 
+<p align="center">
+  <img style="float: right;" src="assets/gopher-tv.png" alt="go-subtitles logo"/>
+</p>
+
 go-subtitles aims to be a powerful library, that makes working with subtitle files a breeze!!
 
 ## Features
@@ -63,3 +67,6 @@ The library requires at least Go 1.12. Most of the functionality was developed u
 github.com/google/go-cmp/cmp
 
 ## Installation
+
+
+btw flaticon for television in logo
