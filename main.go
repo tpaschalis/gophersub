@@ -34,21 +34,31 @@ type SubtitleFile struct {
 }
 
 func main() {
+
+	//got, _ := ParseSRTFile("samples/game-of-thorns-s01e01.srt")
+	//PrintSubfileInfo(got)
+
+	sam, _ := ParseSRTFile("samples/sample.srt")
+	ts := time.Duration(1 * time.Second)
+	sam = TimeshiftSubtitleFile(sam, ts)
+	_ = ToSRTFile(sam, "samples/out.srt")
+
 }
 
 func DurationToTimestampSRT(d time.Duration) string {
-	var hour, minute int
-	var second float64
+	var hour, minute, second, millisec float64
 	stringDuration, err := time.ParseDuration(d.String())
 	if err != nil {
 		//fmt.Println("Could not parse provided time.Duration")
 		panic(err)
 	}
-	hour = int(stringDuration.Hours())
-	minute = int(math.Mod(stringDuration.Minutes(), 60))
+	hour = stringDuration.Hours()
+	minute = math.Mod(stringDuration.Minutes(), 60)
 	second = math.Mod(stringDuration.Seconds(), 60)
+	_, millisec = math.Modf(second)
+	millisec = math.Round(millisec * 1000)
 
-	res := fmt.Sprintf("%02d:%02d:%02.3f", hour, minute, second)
+	res := fmt.Sprintf("%02d:%02d:%02d,%03d", int(hour), int(minute), int(second), int(millisec))
 	return res
 }
 
@@ -333,7 +343,7 @@ func PrintSubfileInfo(subfile SubtitleFile) {
 	cpmLoIdx, cpmHiIdx, runtime := 0, 0, 0.
 	for _, sub := range subfile.Subtitles {
 		currentDur := (sub.End - sub.Start).Seconds()
-		currentCpm := float64(len(sub.Content)) / currentDur
+		currentCpm := float64(len(sub.Content)) / currentDur * 60
 		if currentCpm > cpmHi {
 			cpmHi = currentCpm
 			cpmHiIdx = sub.Index
@@ -352,8 +362,44 @@ func PrintSubfileInfo(subfile SubtitleFile) {
 	fmt.Printf("Start Time : %v\n", subfile.Subtitles[0].Start)
 	fmt.Printf("End Time : %v\n", subfile.Subtitles[len(subfile.Subtitles)-1].End)
 	fmt.Printf("First-to-last Runtime : %v\n", (subfile.Subtitles[len(subfile.Subtitles)-1].End - subfile.Subtitles[0].Start))
-	fmt.Printf("Subtitle Runtime : %v\n", runtime)
-	fmt.Printf("Highest Character-Per-Minute : %.2f on subtitle index : %d\n", cpmHi, cpmHiIdx)
-	fmt.Printf("Lowest Character-Per-Minute : %.2f on subtitle index : %d\n", cpmLo, cpmLoIdx)
-	fmt.Printf("Average Character-Per-Minute : %.2f\n ", cpmAvg)
+	fmt.Printf("Subtitle Runtime : %v\n\n", time.Duration(time.Duration(runtime)*time.Second))
+
+	fmt.Printf("An average human reads at a pace of about 850 Characters Per Minute (CPM)\n")
+	fmt.Printf("Highest CPM : %.2f on subtitle index : %d\n", cpmHi, cpmHiIdx)
+	fmt.Printf("Lowest CPM : %.2f on subtitle index : %d\n", cpmLo, cpmLoIdx)
+	fmt.Printf("Average CPM : %.2f\n ", cpmAvg)
+}
+
+// Exports a SubtitleFile object to an SRT file format.
+// If the file exists, no error will be raised, but will
+// append the data towards its end.
+func ToSRTFile(subfile SubtitleFile, outfile string) error {
+
+	f, err := os.OpenFile(outfile, os.O_RDWR|os.O_CREATE, 0600)
+	if err != nil {
+		return errors.New("Could not open file " + outfile + " for writing")
+	}
+	defer f.Close()
+
+	w := bufio.NewWriter(f)
+
+	// SRT Files do not feature header or metadata information,
+	// so this information will not be written to the file
+	// https://matroska.org/technical/specs/subtitles/srt.html
+
+	var idxStr, startStr, endStr string
+	for _, sub := range subfile.Subtitles {
+		startStr = DurationToTimestampSRT(sub.Start)
+		endStr = DurationToTimestampSRT(sub.End)
+		idxStr = strconv.Itoa(sub.Index)
+		_, err = w.WriteString(idxStr + "\n")
+		_, err = w.WriteString(startStr + " --> " + endStr + "\n")
+		_, err = w.WriteString(sub.Content)
+		_, err = w.WriteString("\n\n")
+		w.Flush()
+	}
+	w.WriteString("\n")
+	w.Flush()
+
+	return nil
 }

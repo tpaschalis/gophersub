@@ -15,16 +15,16 @@ func TestDurationToTimestampSRT(t *testing.T) {
 		expected string
 	}
 	var tests = []testpair{
-		{time.Duration(time.Hour*2 + time.Minute*10 + time.Second*20 + time.Millisecond*183), "02:10:20.183"},
-		{time.Duration(time.Hour*2 + time.Minute*80 + time.Second*90 + time.Millisecond*1800), "03:21:31.800"},
-		{time.Duration(time.Hour*1 + time.Minute*0 + time.Second*10 + time.Millisecond*0), "01:00:10.000"},
-		{time.Duration(time.Hour*20 + time.Minute*5 + time.Second*0 + time.Millisecond*70), "20:05:0.070"},
-		{time.Duration(time.Hour*30 + time.Minute*6 + time.Second*0 + time.Millisecond*8), "30:06:0.008"},
-		{time.Duration(time.Hour*0 + time.Minute*0 + time.Second*0 + time.Millisecond*8), "00:00:0.008"},
-		{time.Duration(time.Hour*0 + time.Minute*0 + time.Second*0 + time.Millisecond*181), "00:00:0.181"},
-		{time.Duration(time.Hour*0 + time.Minute*0 + time.Second*3 + time.Millisecond*977), "00:00:3.977"},
-		{time.Duration(time.Hour*0 + time.Minute*6 + time.Second*3 + time.Millisecond*977), "00:06:3.977"},
-		{time.Duration(time.Hour*0 + time.Minute*7 + time.Second*0 + time.Millisecond*500), "00:07:0.500"},
+		{time.Duration(time.Hour*2 + time.Minute*10 + time.Second*20 + time.Millisecond*183), "02:10:20,183"},
+		{time.Duration(time.Hour*2 + time.Minute*80 + time.Second*90 + time.Millisecond*1800), "03:21:31,800"},
+		{time.Duration(time.Hour*1 + time.Minute*0 + time.Second*10 + time.Millisecond*0), "01:00:10,000"},
+		{time.Duration(time.Hour*20 + time.Minute*5 + time.Second*0 + time.Millisecond*70), "20:05:00,070"},
+		{time.Duration(time.Hour*30 + time.Minute*6 + time.Second*0 + time.Millisecond*8), "30:06:00,008"},
+		{time.Duration(time.Hour*0 + time.Minute*0 + time.Second*0 + time.Millisecond*8), "00:00:00,008"},
+		{time.Duration(time.Hour*0 + time.Minute*0 + time.Second*0 + time.Millisecond*181), "00:00:00,181"},
+		{time.Duration(time.Hour*0 + time.Minute*0 + time.Second*3 + time.Millisecond*977), "00:00:03,977"},
+		{time.Duration(time.Hour*0 + time.Minute*6 + time.Second*3 + time.Millisecond*977), "00:06:03,977"},
+		{time.Duration(time.Hour*0 + time.Minute*7 + time.Second*0 + time.Millisecond*500), "00:07:00,500"},
 	}
 
 	for _, pair := range tests {
@@ -893,15 +893,17 @@ func ExamplePrintSubfileInfo() {
 	}
 
 	PrintSubfileInfo(in)
-	// Output: Headers : sample_headers
+	//Headers : sample_headers
 	//Number of subtitles : 5
 	//Start Time : 1.602s
 	//End Time : 19.751s
 	//First-to-last Runtime : 18.149s
-	//Subtitle Runtime : 12.745999999999999
-	//Highest Character-Per-Minute : 2.20 on subtitle index : 5
-	//Lowest Character-Per-Minute : 1.06 on subtitle index : 2
-	//Average Character-Per-Minute : 0.66
+	//Subtitle Runtime : 12s
+	//
+	//An average human reads at a pace of about 850 Characters Per Minute (CPM)
+	//Highest CPM : 131.72 on subtitle index : 5
+	//Lowest CPM : 63.31 on subtitle index : 2
+	//Average CPM : 39.57
 }
 
 func TestSearchSubtitleFile(t *testing.T) {
@@ -965,6 +967,24 @@ func TestSearchSubtitleFile(t *testing.T) {
 		}
 		if !cmp.Equal(actual, pair.expected) {
 			t.Errorf("Testing SearchSubtitleFile using %v, %v. Expected %v but got %v instead!", pair.input, pair.searchterm, pair.expected, actual)
+		}
+	}
+}
+
+func TestToSRTFile(t *testing.T) {
+	type testpair struct {
+		input        SubtitleFile
+		expectedFile string
+		expectedErr  string
+	}
+
+	var tests = []testpair{}
+
+	for _, pair := range tests {
+		tmpSubtitleFile := ParseSRTFile(input)
+		actualErr := ToSRTFile(tmpSubtitleFile)
+		if actualErr != nil && pair.expectedErr.Error() != actualErr.Error() {
+			t.Errorf("Testing ToSRTFile using %v. Expected error %v but got %v instead!", pair.input, pair.searchterm, actualErr)
 		}
 	}
 }
