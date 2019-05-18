@@ -23,6 +23,11 @@ One of the most nifty features, is that it allows to parse a collection of subti
 ## Roadmap 
 Since starting the 'project' I've been jotting down my brainstorming, and created a notepad of ideas that I'd like to implement in the future. All these ideas are available [roadmap.md](/roadmap.md). You're more than welcome to take a look, and propose new ones!
 
+***Currently working on :*** 
+[ ] WebVTT support
+[ ] Modularize/Split code
+[ ] Add cli support
+[ ] Run SQL Queries
 
 ## Examples
 
@@ -45,6 +50,9 @@ mentionsOfJD, err := SearchSubtitleFiles(got, "Jon|Dany")
 got, err = RemoveSubtitle(got, 10)
 got, err = AddSubtitle(got, "5m2.120s", "5m3.302s", "SPOILER ALERT!")
 
+
+// Save the edited subtitle file
+err = ToSRTFile(got, "exports/got-s01e01.srt")
 
 // Subtitle File information is available, such as
 // detected overlaps, characters-per-minute, total running time etc
@@ -69,4 +77,8 @@ github.com/google/go-cmp/cmp
 ## Installation
 
 
-btw flaticon for television in logo
+## Logo Information
+The logo is homemade. The gopher comes from [egonelbre's repo](https://github.com/egonelbre/gophers) and while the television icon is made by [Freepik](https://www.freepik.com/) from www.flaticon.com.
+
+
+
