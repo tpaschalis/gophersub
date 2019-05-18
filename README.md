@@ -1,11 +1,11 @@
-# go-subtitles
+# gophersub
 Go library and command-line utility to work with subtitle files.
 
 <p align="center">
-  <img style="float: right;" src="assets/gopher-tv.png" alt="go-subtitles logo"/>
+  <img style="float: right;" src="assets/gopher-tv.png" alt="gophersub logo"/>
 </p>
 
-go-subtitles aims to be a powerful library, that makes working with subtitle files a breeze!!
+gophersub aims to be a powerful library, that makes working with subtitle files a breeze!!
 
 ## Features
 * Works with SubRip `.srt` and WebVTT `.vtt` files
@@ -24,10 +24,10 @@ One of the most nifty features, is that it allows to parse a collection of subti
 Since starting the 'project' I've been jotting down my brainstorming, and created a notepad of ideas that I'd like to implement in the future. All these ideas are available [roadmap.md](/roadmap.md). You're more than welcome to take a look, and propose new ones!
 
 ***Currently working on :*** 
-[ ] WebVTT support
-[ ] Modularize/Split code
-[ ] Add cli support
-[ ] Run SQL Queries
+- [ ] WebVTT support
+- [ ] Modularize/Split code
+- [ ] Add cli support
+- [ ] Run SQL Queries
 
 ## Examples
 

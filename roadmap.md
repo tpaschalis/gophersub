@@ -1,4 +1,4 @@
-# go-subtitles
+# gophersub
 
 Development started on 2019-05-03 and was spurred as an idea a few days earlier, as I was struggling with the subtitles of the lastest episode in the "A Symphony of Frost and Flame" series.
 
