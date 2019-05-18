@@ -34,15 +34,6 @@ type SubtitleFile struct {
 }
 
 func main() {
-
-	//got, _ := ParseSRTFile("samples/game-of-thorns-s01e01.srt")
-	//PrintSubfileInfo(got)
-
-	sam, _ := ParseSRTFile("samples/sample.srt")
-	ts := time.Duration(1 * time.Second)
-	sam = TimeshiftSubtitleFile(sam, ts)
-	_ = ToSRTFile(sam, "samples/out.srt")
-
 }
 
 func DurationToTimestampSRT(d time.Duration) string {
@@ -398,7 +389,7 @@ func ToSRTFile(subfile SubtitleFile, outfile string) error {
 		_, err = w.WriteString("\n\n")
 		w.Flush()
 	}
-	w.WriteString("\n")
+	//w.WriteString("\n")
 	w.Flush()
 
 	return nil
