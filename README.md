@@ -8,7 +8,7 @@ Go library and command-line utility to work with subtitle files.
 gophersub aims to be a powerful library, that makes working with subtitle files a breeze!!
 
 ## Features
-* Works with SubRip `.srt` and WebVTT `.vtt` files
+* Works with SubRip `.srt` (and WebVTT `.vtt` soon!) files
 * Designed with modularity and extensibility in mind
 * Extensively tested using Table-Driven Tests. Always at >95% coverage
 * Easy to work with, either as an imported package or a command-line application (soon!)
@@ -16,8 +16,6 @@ gophersub aims to be a powerful library, that makes working with subtitle files 
 Most of the actions you might expect from such a tool are already implemented! 
 
 Timeshifting, pacing, searching, adding and deleting new subs, getting practical information (such as running time, or average characters-per-minute)
-
-One of the most nifty features, is that it allows to parse a collection of subtitle files at once, and then query them using SQL syntax, from an SQLite database.
 
 
 ## Roadmap 
