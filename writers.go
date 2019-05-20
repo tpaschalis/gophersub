@@ -9,7 +9,7 @@ import (
 
 // Exports a SubtitleFile object to an SRT file format.
 // If the file exists, no error will be raised, but will
-// append the data towards its end.
+// append the data towards its end.(???)
 func ToSRTFile(subfile SubtitleFile, outfile string) error {
 
 	f, err := os.OpenFile(outfile, os.O_RDWR|os.O_CREATE, 0600)
@@ -38,5 +38,9 @@ func ToSRTFile(subfile SubtitleFile, outfile string) error {
 	//w.WriteString("\n")
 	w.Flush()
 
+	return nil
+}
+
+func ToWebVTTFile(subfile SubtitleFile, outfile string) error {
 	return nil
 }
