@@ -78,7 +78,7 @@ func TestTimeshiftSubtitleFile(t *testing.T) {
 		if len(actual.Subtitles) != len(pair.expected.Subtitles) {
 			t.Errorf("The length of the returned SubtitleFile (%v) is not the same as the lenght of the input SubtitleFile (%v) as expected", len(actual.Subtitles), len(pair.input.Subtitles))
 		}
-		for i, _ := range pair.input.Subtitles {
+		for i := range pair.input.Subtitles {
 			if !cmp.Equal(actual.Subtitles[i], pair.expected.Subtitles[i]) {
 				t.Errorf("There was an error while timeshifting a test-case subtitle. With input (%v), expected (%v) but got (%v)", pair.input.Subtitles[i], pair.expected.Subtitles[i], actual.Subtitles[i])
 			}

@@ -62,7 +62,7 @@ func ParseSRTFile(filename string) (SubtitleFile, []error) {
 			current.End = end
 		}
 
-		current.Content = strings.Join(cur[2:len(cur)], "\n")
+		current.Content = strings.Join(cur[2:], "\n")
 		res.Subtitles = append(res.Subtitles, current)
 	}
 
