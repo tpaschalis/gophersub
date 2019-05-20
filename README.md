@@ -1,4 +1,10 @@
 # gophersub
+
+![GitHub](https://img.shields.io/github/license/tpaschalis/gopherusb.svg)
+![Travis (.com)](https://img.shields.io/travis/com/tpaschalis/gophersub.svg)
+![Codecov](https://img.shields.io/codecov/c/github/tpaschalis/gophersub.svg)
+
+
 Go library and command-line utility to work with subtitle files.
 
 <p align="center">
