@@ -1,6 +1,6 @@
 # gophersub
 
-![GitHub](https://img.shields.io/github/license/tpaschalis/gopherusb.svg)
+![GitHub](https://img.shields.io/github/license/tpaschalis/gophersub.svg)
 ![Travis (.com)](https://img.shields.io/travis/com/tpaschalis/gophersub.svg)
 ![Codecov](https://img.shields.io/codecov/c/github/tpaschalis/gophersub.svg)
 
