@@ -71,7 +71,7 @@ func SerializeSubtitles(subfile SubtitleFile) SubtitleFile {
 	// after parsing a subtitle files. Should we return some errors
 	// to help with debugging and future expansion?
 	var res SubtitleFile = subfile
-	for i, _ := range subfile.Subtitles {
+	for i := range subfile.Subtitles {
 		res.Subtitles[i].Index = i + 1
 	}
 	return res
