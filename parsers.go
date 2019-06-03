@@ -142,7 +142,7 @@ func ParseWebVTTFile(filename string) (SubtitleFile, []error) {
 		//var current Subtitle
 		cur := strings.FieldsFunc(reader.s.Text(), EOLSplit)
 		fmt.Println(cur)
-		if blockno == 0 && cur[0] != "WEBVTT" {
+		if currentBlock == 0 && cur[0] != "WEBVTT" {
 			return res, []error{errors.New("Provided file does not start with `WEBVTT`")}
 		}
 
